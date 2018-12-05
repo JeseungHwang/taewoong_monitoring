@@ -4,19 +4,50 @@ var app = express();				        //서버 생성
 var bodyParser = require('body-parser');	
 var app = express();
 var http = require('http');
-//var fs = require("fs");
+var mysql = require('mysql');
+var fs = require("fs");
+var moment = require('moment');
 const morgan = require('morgan');
 
-
-
-app.use(express.static(path.join( __dirname + '/public')));
+app.use(express.static(__dirname + '/public'));
+app.set('views', __dirname + '/views');
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(morgan('default'));
 
+/*
+var dbConnection = mysql.createConnection({
+	host:'localhost',
+	post:6033,
+	user:'root',
+	password:'dir5187413#',
+	database:'iiot'
+})
+*/
+// Maria DB 커넥션 풀
+var dbConnection = mysql.createConnection({
+	host:'127.0.0.1',
+	port:3307,
+	user:'root',
+	password:'7413',
+	database:'taewoong'
+})
 
-var router = require('./router/main')(app);
+// Maria DB 연결
+dbConnection.connect(function(err) {
+    if (err) {
+        console.error('Maria connection error');
+        console.error(err);
+        throw err;
+    }
+});
 
-var server = app.listen(3000, '0.0.0.0', function(){ 
+
+var r_main = require('./router/main')(app, fs);
+var r_sql = require('./router/sql')(app, fs, mysql, dbConnection, moment);
+
+var server = app.listen(18000, '0.0.0.0', function(){ 
     console.log('Server is running...');
 });

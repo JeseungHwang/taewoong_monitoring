@@ -1,6 +1,11 @@
-module.exports = function(app)
+module.exports = function(app, fs)
 {
-     app.get('/test',function(req,res){
-     	res.render('../public/main.html')
-     });
+	var moment = require('moment');
+    app.get('/main',function(req,res){
+		res.render('../views/main.html');
+    });
+
+    app.get('/graph',function(req,res){
+		res.render('../views/graph.html');
+    });
 }
