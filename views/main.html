@@ -9,11 +9,21 @@
 	<title>Document</title>
     <link rel="stylesheet" href="css/angular-material.1.1.8.min.css">
     <style type="text/css">
-        
+        .GraphForm{
+            width: 48%; margin: 0; display: inline-block;
+        }
+        .GraphContainer{
+            height: 350px; width: 100%; text-align: center;
+        }
+        .GraphContainer h3{
+            margin: 0px auto;
+        }
+        .GraphFrame{
+            height: 300px; width: 100%; display: inline-block;
+        }
     </style>
-
-
 </head>
+
 <body>
 	<div ng-controller="ToolbarCtrl" ng-cloak>
         <md-content>
@@ -34,12 +44,45 @@
             <br>
         </md-content>
     </div>
-    <div ng-controller="GasCtrl">
-        <div id="Gas1Graph" style="height: 300px; width: 60%"></div>
-        <div id="Gas2Graph" style="height: 300px; width: 60%"></div>
-        <div id="Gas3Graph" style="height: 300px; width: 60%"></div>
-        <div id="Gas4Graph" style="height: 300px; width: 60%"></div>
-        <div id="Gas5Graph" style="height: 300px; width: 60%"></div>
+    <div class="GraphForm" ng-controller="GasCtrl">
+        <div class="GraphContainer">
+            <h3>가열로 1호기</h3>
+            <div class="GraphFrame" id="Gas1Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <h3>가열로 2호기</h3>
+            <div class="GraphFrame" id="Gas2Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <h3>가열로 3호기</h3>
+            <div class="GraphFrame" id="Gas3Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <h3>가열로 4호기</h3>
+            <div class="GraphFrame" id="Gas4Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <h3>가열로 5호기</h3>
+            <div class="GraphFrame" id="Gas5Graph"></div>
+        </div>
+    </div>
+
+    <div class="GraphForm" ng-controller="ElectTemperCtrl">
+        <div class="GraphContainer">
+            <div class="GraphFrame" id="ElectTemper1Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <div class="GraphFrame" id="ElectTemper2Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <div class="GraphFrame" id="ElectTemper3Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <div class="GraphFrame" id="ElectTemper4Graph"></div>
+        </div>
+        <div class="GraphContainer">
+            <div class="GraphFrame" id="ElectTemper5Graph"></div>
+        </div>
     </div>
 
     
@@ -66,127 +109,283 @@
         }]);
 
         myApp.controller('GasCtrl', ['$scope','$http', '$interval', function($scope, $http, $interval){
-            $scope.gasTimestamp = [];
-            $scope.gasAmount = [];
-            getGasAmount("1");
-            getGasAmount("2");
-            getGasAmount("3");
-            getGasAmount("4");
-            getGasAmount("5");
+            $scope.gasList = [] ;
 
-            $interval(function(){
-                getGasAmount("1");
-                getGasAmount("2");
-                getGasAmount("3");
-                getGasAmount("4");
-                getGasAmount("5");
-            },30000);
+            $scope.gasInfoClass = function(heatingFurnaceNumber){
+                var heatingFurnaceNumber = heatingFurnaceNumber;
+                var gasTimestamp = [];
+                var gasAmount = [];
 
-            function getGasAmount(gasNumber){
-                console.log("Function Call! "+ gasNumber);
-                $http({
-                    method  : 'GET',
-                    url     : 'http://localhost:18000/Gas/'+gasNumber,
-                    config: 'Content-Type: application/json;'
-                }).
-                then(function successCallback(response) {
-                    $scope.gasTimestamp = [];
-                    $scope.gasAmount = [];
-                    for (var i = response.data.length-2 ; i >= 0 ; i--) {
-                        $scope.gasTimestamp.push(response.data[i].createdAt)
-                        $scope.gasAmount.push( (response.data[i].value - response.data[i+1].value) / 10)
-                    }
-                    setGraphData(gasNumber, "Gas"+gasNumber+"Graph");
-                },function errorCallback(response) {
-                  console.log('error occuring');
-                });
-            }
+                getGasAmount();
 
-            function setGraphData(gasNumber, graphID){
-                var dom = document.getElementById(graphID);
-                var myChart = echarts.init(dom);
-                var app = {};
-                option = null;
-                var date = $scope.gasTimestamp;
-                var data = $scope.gasAmount;
+                $interval(function(){
+                    getGasAmount();
+                },30000);
 
-                option = {
-                    tooltip: {
-                        trigger: 'axis',
-                        position: function (pt) {
-                            return [pt[0], '10%'];
+                // funtion getGasAmount()
+                // 설명 : 데이터베이스로부터 gas 사용량 정보를 얻어오기 위해 요청하는 함수
+                function getGasAmount(){
+                    $http({
+                        method  : 'GET',
+                        url     : 'http://localhost:18000/Gas/'+heatingFurnaceNumber,
+                        config: 'Content-Type: application/json;'
+                    }).
+                    then(function successCallback(response) {
+                        gasTimestamp = [];
+                        gasAmount = [];
+                        for (var i = response.data.length-2 ; i >= 0 ; i--) {
+                            gasTimestamp.push(response.data[i].createdAt)
+                            gasAmount.push( (response.data[i].value - response.data[i+1].value) / 10)
                         }
-                    },
-                    title: {
-                        left: 'center',
-                        text: '가열로 # '+gasNumber,
-                    },
-                    toolbox: {
-                        feature: {
-                            dataZoom: {
-                                yAxisIndex: 'none'
-                            },
-                            restore: {},
-                            saveAsImage: {}
-                        }
-                    },
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: date
-                    },
-                    yAxis: {
-                        type: 'value',
-                        boundaryGap: [0, '1%']
-                    },
-                    dataZoom: [{
-                        type: 'inside',
-                        start: 83,
-                        end: 100
-                    }, {
-                        start: 0,
-                        end: 10,
-                        handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-                        handleSize: '80%',
-                        handleStyle: {
-                            color: '#fff',
-                            shadowBlur: 3,
-                            shadowColor: 'rgba(0, 0, 0, 0.6)',
-                            shadowOffsetX: 2,
-                            shadowOffsetY: 2
-                        }
-                    }],
-                    series: [
-                        {
-                            name:'가스량',
-                            type:'line',
-                            smooth:true,
-                            symbol: 'circle',
-                            symbolSize: [6,6],
-                            sampling: 'average',
-                            itemStyle: {
-                                color: 'rgb(255, 70, 131)'
-                            },
-                            areaStyle: {
-                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                                    offset: 0,
-                                    color: 'rgb(255, 158, 68)'
-                                }, {
-                                    offset: 1,
+                        setGraphData("Gas"+heatingFurnaceNumber+"Graph");
+                    },function errorCallback(response) {
+                      console.log('error occuring');
+                    });
+                }
+
+                // funtion setGraphData()
+                // 설명 : 그래프를 그리기 위한 정보를 Set 하는 함수
+                function setGraphData(graphID){
+                    var dom = document.getElementById(graphID);
+                    var myChart = echarts.init(dom);
+                    var app = {};
+                    option = {
+                        tooltip: {
+                            trigger: 'axis',
+                            position: function (pt) {
+                                return [pt[0], '10%'];
+                            }
+                        },
+                        title: {
+                            left: '',
+                            text: '',
+                        },
+                        toolbox: {
+                            feature: {
+                                dataZoom: {
+                                    yAxisIndex: 'none'
+                                },
+                                restore: {},
+                                saveAsImage: {}
+                            }
+                        },
+                        xAxis: {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: gasTimestamp
+                        },
+                        yAxis: {
+                            type: 'value',
+                            boundaryGap: [0, '1%'],
+                            position: 'left',
+                            name : '가스사용량(m3)',
+                            nameTextStyle :{
+                                fontWeight : 'bold'
+                            }
+                        },
+                        dataZoom: [{
+                            type: 'inside',
+                            start: 50,
+                            end: 100
+                        }, {
+                            start: 0,
+                            end: 10,
+                            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                            handleSize: '80%',
+                            handleStyle: {
+                                color: '#fff',
+                                shadowBlur: 3,
+                                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                                shadowOffsetX: 2,
+                                shadowOffsetY: 2
+                            }
+                        }],
+                        series: [
+                            {
+                                name:'가스량',
+                                type:'line',
+                                smooth:true,
+                                symbol: 'circle',
+                                symbolSize: [6,6],
+                                sampling: 'average',
+                                itemStyle: {
                                     color: 'rgb(255, 70, 131)'
-                                }])
-                            },
-                            data: data
-                        }
-                    ]
-                };
-                
-                if (option && typeof option === "object") {
-                    myChart.setOption(option, true);
+                                },
+                                areaStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                        offset: 0,
+                                        color: 'rgb(255, 158, 68)'
+                                    }, {
+                                        offset: 1,
+                                        color: 'rgb(255, 70, 131)'
+                                    }])
+                                },
+                                data: gasAmount
+                            }
+                        ]
+                    };
+                    
+                    if (option && typeof option === "object") {
+                        myChart.setOption(option, true);
+                    }
                 }
             }
-        }]);
 
+            //Gas 사용량 정보를 담은 Class 객체 생성하여 gasList에 추가
+            for(var i=1 ; i<=5 ; i++){
+                $scope.gasList.push($scope.gasInfoClass(i));
+            }
+        }]);
+        
+        //
+        // Controller : ElectTemperCtrl
+        // 설명 : 전력량, 온도 정보를 관리하는 컨트롤러
+        // 
+
+        myApp.controller('ElectTemperCtrl', ['$scope','$http', '$interval', function($scope, $http, $interval){
+            $scope.electricityList = [] ;
+            $scope.temperatureList = [] ;
+
+            
+
+            $scope.electricityInfoClass = function(electID, temperID1, temperID2){
+                var electID = electID;
+                var electTimestamp = [];
+                var electAmount = [];
+
+                var temperID1 = temperID1;
+                var temperID2 = temperID2;
+                var temperTimestamp = [];
+                var temperAmount = [];
+
+                getElectricityAmount();
+                getTemperatureAmount();
+                console.log(electAmount);
+                console.log(temperAmount);
+                setGraphData();
+
+                function getElectricityAmount(){
+                    $http({
+                        method  : 'GET',
+                        url     : 'http://localhost:18000/Electricity/'+electID,
+                        config: 'Content-Type: application/json;'
+                    }).
+                    then(function successCallback(response) {
+                        electTimestamp = [];
+                        electAmount = [];
+                        for (var i = response.data.length-2 ; i >= 0 ; i--) {
+                            electTimestamp.push(response.data[i].createdAt)
+                            electAmount.push((response.data[i].value - response.data[i+1].value))
+                        }
+                        console.log(electAmount);
+                    },function errorCallback(response) {
+                      console.log('error occuring');
+                    });
+                }
+
+                function getTemperatureAmount(){
+                    $http({
+                        method  : 'GET',
+                        url     : 'http://localhost:18000/Temperature/'+temperID1,
+                        config: 'Content-Type: application/json;'
+                    }).
+                    then(function successCallback(response) {
+                        electTimestamp = [];
+                        electAmount = [];
+                        for (var i = response.data.length-2 ; i >= 0 ; i--) {
+                            temperTimestamp.push(response.data[i].createdAt)
+                            temperAmount.push((response.data[i].value - response.data[i+1].value))
+                        }
+                    },function errorCallback(response) {
+                      console.log('error occuring');
+                    });
+                }
+
+
+                function setGraphData(){
+                    var dom = document.getElementById("ElectTemper1Graph");
+                    var myChart = echarts.init(dom);
+                    var app = {};
+                    option = null;
+                    option = {
+                      title: {
+                          text: ''
+                      },
+                      tooltip: {
+                          trigger: 'axis'
+                      },
+                      legend: {
+                          data:['온도','전력량']
+                      },
+                      toolbox: {
+                          feature: {
+                              saveAsImage: {}
+                          }
+                      },
+                      xAxis: {
+                          type: 'category',
+                          boundaryGap: false,
+                          data: electTimestamp
+                      },
+                      yAxis: [
+                          {
+                              type: 'value',
+                              position: 'left',
+                              name : '전력사용량(kWh)',
+                              nameTextStyle :{
+                                fontWeight : 'bold'
+                              }
+                          },{
+                              type: 'value',
+                              position: 'right',
+                              name : '온도(C)',
+                              nameTextStyle :{
+                                fontWeight : 'bold'
+                              }
+                          }
+                      ],
+                      dataZoom: [{
+                            type: 'inside',
+                            start: 50,
+                            end: 100
+                        }, {
+                            start: 0,
+                            end: 10,
+                            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                            handleSize: '80%',
+                            handleStyle: {
+                                color: '#fff',
+                                shadowBlur: 3,
+                                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                                shadowOffsetX: 2,
+                                shadowOffsetY: 2
+                            }
+                      }],
+                      series: [
+                          {
+                              name:'온도',
+                              type:'line',
+                              stack: '总量',
+                              data: electAmount
+                          },
+                          {
+                              name:'전력량',
+                              type:'line',
+                              stack: '总量',
+                              data: temperAmount
+                          }
+                      ]
+                    };
+                    
+                    if (option && typeof option === "object") {
+                      myChart.setOption(option, true);
+                    }
+                }
+            }
+
+            $scope.electricityList.push($scope.electricityInfoClass(1,6,0));
+
+        }]);
         
 
                 
