@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko" ng-app="MonitoringApp">
 <head>
-	<meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
     <!-- Meta, title, CSS, favicons, etc. -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>ENS Monitoring</title>
-    <link rel="stylesheet" href="css/angular-material.1.1.8.min.css">
+    <title>ENS Monitoring</title>
+    <link rel="stylesheet" href="/css/angular-material.1.1.8.min.css">
     <style type="text/css">
         .GraphForm{
             width: 100%; margin: 0; display: inline-block; text-align: center;
@@ -37,21 +37,21 @@
 </head>
 
 <body>
-	<div ng-controller="ToolbarCtrl" ng-cloak>
+    <div ng-controller="ToolbarCtrl" ng-cloak>
         <div layout="column" ng-cloak="" class="sidenavdemoCustomSidenav">
             <section layout="row" flex="">
                 <md-sidenav class="md-sidenav-left" md-component-id="left" md-disable-backdrop="" md-whiteframe="4">
 
                     <md-toolbar class="md-theme-indigo">
                         <div>
-                            <h1 class="md-toolbar-tools">가열로 List <md-icon md-svg-icon="img/cancel.svg" ng-click="toggleLeft()"></md-icon></h1>
+                            <h1 class="md-toolbar-tools">가열로 List <md-icon md-svg-icon="/img/cancel.svg" ng-click="toggleLeft()"></md-icon></h1>
                         </div>
                     </md-toolbar>
 
                     <md-content layout-margin="">
-                        <md-list-item class="md-3-line" ng-repeat="item in HFlist" ng-click="null">
-                            <div class="md-list-item-text" layout="column">
-                                <div><md-icon md-svg-icon="img/fire.svg"></md-icon>{{ item.name }}</div>
+                        <md-list-item class="md-3-line" ng-repeat="item in HFlist" ng-click="HFhistory($event, item)">
+                            <div class="md-list-item-text" layout="column" >
+                                <div ng-value={{item.HFid}}><md-icon md-svg-icon="/img/fire.svg"></md-icon>{{ item.name }}</div>
                             </div>
                         </md-list-item>
                     </md-content>
@@ -63,11 +63,11 @@
             <md-toolbar class="md-hue-2">
                 <div class="md-toolbar-tools">
                     <md-button class="md-icon-button" aria-label="Menu" ng-click="toggleLeft()">
-                        <md-icon md-svg-icon="img/menu.svg"></md-icon>
+                        <md-icon md-svg-icon="/img/menu.svg"></md-icon>
                     </md-button>
                     <h2 flex md-truncate>ENS - Taewoong System Monitoring</h2>
                     <md-button class="md-icon-button" aria-label="Alarm" >
-                        <md-icon md-svg-icon="img/alarm.svg"></md-icon>
+                        <md-icon md-svg-icon="/img/alarm.svg"></md-icon>
                     </md-button>
                     <div>
                         {{date | date:'yyyy-MM-dd HH-mm-ss'}}
@@ -121,9 +121,9 @@
     </div>
 
     
-	
+    
 </body>
-	
+    
     <!-- Angular Material requires Angular.js Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
@@ -132,14 +132,15 @@
 
     <!-- Angular Material Library -->
     <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
-    <script type="text/javascript" src="js/echarts.min.js"></script>
+    <script type="text/javascript" src="/js/echarts.min.js"></script>
 
 
 
     <script type="text/javascript">
         var myApp = angular.module('MonitoringApp', ['ngMaterial']);
         
-        myApp.controller('ToolbarCtrl', function($scope, $interval, $mdSidenav) {
+        myApp.controller('ToolbarCtrl', function($scope, $interval, $mdSidenav, $window, $location) {
+            
             $interval(function(){
                 $scope.date = new Date();
             },1000);
@@ -169,10 +170,14 @@
                     HFid: '5',
                 }
             ];
+            $scope.HFhistory = function(event, item){
+                var linkURL = 'history/'+item.HFid;
+                $window.location.href = linkURL;
+            };
         });  
 
 
-        myApp.controller('GraphCtrl', ['$scope','$http', '$interval', '$timeout', function($scope, $http, $interval, $timeout){
+        myApp.controller('GraphCtrl', function($scope, $http, $interval, $timeout){
             $scope.heatingFurnaceList = [] ;
             $scope.liveCheckbox = true;
             var updateInterv = undefined;
@@ -411,8 +416,7 @@
                             $scope.electricityInfo();
                             $scope.getTemperature();
                         }
-                        console.log(11);
-                    },3000);
+                    },30000);
                 }
 
             }//$scope.HeatingFurnaceClass = function 
@@ -425,7 +429,7 @@
             //$scope.getGasInfo();
 
             
-        }]);
+        });
         
     </script>
 </html>

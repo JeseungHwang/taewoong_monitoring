@@ -4,8 +4,10 @@ module.exports = function(app, fs)
     app.get('/main',function(req,res){
 		res.render('../views/main.html');
     });
-
-    app.get('/graph',function(req,res){
-		res.render('../views/graph.html');
+    
+    app.get('/history/:HFid',function(req,res){
+    	var HFid = req.params.HFid;
+    	console.log(HFid);
+		res.render('../views/history.html');
     });
 }

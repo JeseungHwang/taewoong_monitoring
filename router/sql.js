@@ -22,8 +22,8 @@ module.exports = function(app, fs, mysql, connection, moment)
         });
     });
 
-    app.get('/Electricity/:idNumber', function(req, res){
-      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.idNumber-1].elect, function(err,result,rows){
+    app.get('/Gas/history/:heatingFurnaceNumber', function(req, res){
+      connection.query('SELECT * from iiot WHERE id = ? AND name = "보정적산량" ORDER BY createdAt DESC LIMIT 121',heatingFurnaceID[req.params.heatingFurnaceNumber-1].gas, function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 0001]');
               return;
@@ -33,8 +33,41 @@ module.exports = function(app, fs, mysql, connection, moment)
         });
     });
 
-    app.get('/Temperature/:idNumber', function(req, res){
-      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.idNumber-1].temper1, function(err,result,rows){
+    app.get('/Electricity/:heatingFurnaceNumber', function(req, res){
+      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.heatingFurnaceNumber-1].elect, function(err,result,rows){
+          if (err){
+              res.send('Select query Error [Code : 0001]');
+              return;
+            }
+            result = setHHMMformat(result);
+            res.send(result)
+        });
+    });
+
+    app.get('/Electricity/history/:heatingFurnaceNumber', function(req, res){
+      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.heatingFurnaceNumber-1].elect, function(err,result,rows){
+          if (err){
+              res.send('Select query Error [Code : 0001]');
+              return;
+            }
+            result = setHHMMformat(result);
+            res.send(result)
+        });
+    });
+
+    app.get('/Temperature/:heatingFurnaceNumber', function(req, res){
+      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper1, function(err,result,rows){
+          if (err){
+              res.send('Select query Error [Code : 0001]');
+              return;
+            }
+            result = setHHMMformat(result);
+            res.send(result)
+        });
+    });
+
+    app.get('/Temperature/history/:heatingFurnaceNumber', function(req, res){
+      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper1, function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 0001]');
               return;
