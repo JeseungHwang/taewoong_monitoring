@@ -9,32 +9,7 @@
 	<title>ENS Monitoring</title>
     <link rel="stylesheet" href="/css/angular-material.1.1.8.min.css">
     <link rel="stylesheet" href="/css/flatpickr.min.css">
-    <style type="text/css">
-        .GraphForm{
-            width: 100%; margin: 0; display: inline-block; text-align: center;
-        }
-        .GraphContainer{
-            height: 350px; width: 100%; text-align: center;
-        }
-        .GraphContainer h3{
-            margin: 0px auto;
-        }
-        .GraphFrame{
-            height: 300px; width: 100%; display: inline-block;
-        }
-        .liveCheckBox{
-            margin-right: 30px; text-align: right;
-        }
-        md-progress-circular{
-            display:inline-block; text-align:center; margin-top: 50px;
-        }
-        md-list-item.md-3-line, md-list-item.md-3-line>.md-no-style{
-            height: 50px; min-height: 50px;
-        }
-        md-icon{
-            margin-right: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/ens.css">
 </head>
 
 <body>
@@ -50,7 +25,12 @@
                     </md-toolbar>
 
                     <md-content layout-margin="">
-                        <md-list-item class="md-3-line" ng-repeat="item in HFlist" ng-click="HFhistory($event, item)">
+                        <md-list-item class="md-3-line" ng-repeat="item in MenuList" ng-click="pageChange($event, item)">
+                            <div class="md-list-item-text" layout="column"  >
+                                <div ng-value={{item.urls}}><md-icon md-svg-icon={{item.icon_img}}></md-icon>{{ item.name }}</div>
+                            </div>
+                        </md-list-item>
+                        <md-list-item class="md-3-line sub-list-item" ng-repeat="item in HFlist" ng-click="HFhistory($event, item)">
                             <div class="md-list-item-text" layout="column" >
                                 <div ng-value={{item.HFid}}><md-icon md-svg-icon="/img/fire.svg"></md-icon>{{ item.name }}</div>
                             </div>
@@ -81,8 +61,17 @@
 
     <div class="GraphForm" ng-controller="GraphCtrl">
         <div class="GraphContainer">
-            <div>
-                <input class="flatpickr flatpickr-input" type="text" placeholder="Select Date" readonly="readonly">
+            <div class="Calendar-Container">
+                <div class="Calendar-Form">
+                    <input class="flatpickr flatpickr-input active" type="text" id="startInput" ng-model="pickDateTime.start" readonly="readonly">
+                </div>
+                <strong class="CalendarGap">~</strong>
+                <div class="Calendar-Form">
+                    <input class="flatpickr flatpickr-input active" type="text" id="startInput" ng-model="pickDateTime.end" readonly="readonly">
+                </div>
+                <div class="Calendar-Form">
+                    <md-button class="md-raised md-primary searchBtn" ng-click="serchData()">Search</md-button>
+                </div>
             </div>
             <h3>가열로 1호기</h3>
             <div class="GraphFrame" id="historyGraph" >
@@ -121,6 +110,11 @@
                 };
             }
 
+            $scope.MenuList = [
+                { name : '전체 모니터링', urls : 'main', icon_img: '/img/monitor.svg'},
+                { name : '가열로 이력 검색', urls : 'history', icon_img : '/img/history.svg'}
+            ];
+
             $scope.HFlist = [
                 {
                     name : '가열로 1호기',
@@ -140,14 +134,21 @@
                 }
             ];
             $scope.HFhistory = function(event, item){
-                var linkURL = item.HFid;
+                var linkURL = "http://" + $window.location.host + "/history/" +item.HFid;
                 $window.location.href = linkURL;
             };
+            $scope.pageChange = function(event, item){
+                var linkURL = "http://" + $window.location.host + "/" +item.urls;
+                $window.location = linkURL;
+            }
         });  
 
 
         myApp.controller('GraphCtrl', function($scope, $http, $interval, $timeout, $window, $location){
             var heatingFurnaceNumber = $window.location.pathname.substring(9,10);
+            if(heatingFurnaceNumber == ''){
+                heatingFurnaceNumber = 1;
+            }
 
             var gasTimestamp = [];
             var gasAmount = [];
@@ -156,11 +157,48 @@
             var temperTimestamp = [];
             var temperAmount = [];
 
+            
 
+            $scope.pickDateTime={
+                //end: timeConverter('end'),
+                //start: timeConverter('start')
+                end: '2018-12-05 23:59',
+                start: '2018-12-03 09:00'
+            };
+
+            var start = flatpickr("#startInput", {
+                enableTime: true, 
+                dateFormat: "Y-m-d H:i",
+                disableMobile: true,
+                time_24hr: true,
+                defaultDate : $scope.pickDateTime.start
+            });
+
+            $scope.serchData = function(){
+                console.log($scope.pickDateTime);
+                $scope.getGasInfo();
+            }
+            
+            function timeConverter(point){
+                var nowDate = new Date();
+                if(point == 'start'){
+                    var prevDate = new Date()-(1000*60*60*2);
+                    nowDate = new Date(prevDate);
+                }
+                var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+                var year = nowDate.getFullYear();
+                var month = months[nowDate.getMonth()];
+                var date = nowDate.getDate();
+                var hour = nowDate.getHours();
+                var min = nowDate.getMinutes();
+                return year+'-'+month+'-'+date+' '+ hour + ':' + min;
+            }
+            
             $scope.getGasInfo = function(){
                 $http({
-                    method  : 'GET',
+                    method  : 'POST',
                     url     : 'http://localhost:18000/Gas/history/'+heatingFurnaceNumber,
+                    data : $scope.pickDateTime,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
@@ -178,8 +216,9 @@
 
             $scope.electricityInfo = function(){
                 $http({
-                    method  : 'GET',
+                    method  : 'POST',
                     url     : 'http://localhost:18000/Electricity/history/'+heatingFurnaceNumber,
+                    data : $scope.pickDateTime,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
@@ -197,8 +236,9 @@
 
             $scope.getTemperature = function(){
                 $http({
-                    method  : 'GET',
+                    method  : 'POST',
                     url     : 'http://localhost:18000/Temperature/history/'+heatingFurnaceNumber,
+                    data : $scope.pickDateTime,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {

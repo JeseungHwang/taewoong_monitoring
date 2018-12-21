@@ -22,8 +22,10 @@ module.exports = function(app, fs, mysql, connection, moment)
         });
     });
 
-    app.get('/Gas/history/:heatingFurnaceNumber', function(req, res){
-      connection.query('SELECT * from iiot WHERE id = ? AND name = "보정적산량" ORDER BY createdAt DESC LIMIT 121',heatingFurnaceID[req.params.heatingFurnaceNumber-1].gas, function(err,result,rows){
+    app.post('/Gas/history/:heatingFurnaceNumber', function(req, res){
+      var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].gas, req.body.start, req.body.end];
+      console.log(params);
+      connection.query('SELECT * from iiot WHERE id = ? AND name = "보정적산량" AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt DESC', params ,function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 0001]');
               return;
@@ -44,8 +46,9 @@ module.exports = function(app, fs, mysql, connection, moment)
         });
     });
 
-    app.get('/Electricity/history/:heatingFurnaceNumber', function(req, res){
-      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.heatingFurnaceNumber-1].elect, function(err,result,rows){
+    app.post('/Electricity/history/:heatingFurnaceNumber', function(req, res){
+      var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].elect, req.body.start, req.body.end];
+      connection.query('SELECT * from iiot WHERE id = ? AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt DESC', params ,function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 0001]');
               return;
@@ -66,8 +69,9 @@ module.exports = function(app, fs, mysql, connection, moment)
         });
     });
 
-    app.get('/Temperature/history/:heatingFurnaceNumber', function(req, res){
-      connection.query('SELECT * from iiot WHERE id = ? ORDER BY createdAt DESC LIMIT 121', heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper1, function(err,result,rows){
+    app.post('/Temperature/history/:heatingFurnaceNumber', function(req, res){
+      var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper1, req.body.start, req.body.end];
+      connection.query('SELECT * from iiot WHERE id = ? AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt DESC', params ,function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 0001]');
               return;

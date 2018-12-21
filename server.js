@@ -8,6 +8,7 @@ var mysql = require('mysql');
 var fs = require("fs");
 var moment = require('moment');
 const morgan = require('morgan');
+const flatpickr = require("flatpickr");
 
 app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');

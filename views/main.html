@@ -8,32 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ENS Monitoring</title>
     <link rel="stylesheet" href="/css/angular-material.1.1.8.min.css">
-    <style type="text/css">
-        .GraphForm{
-            width: 100%; margin: 0; display: inline-block; text-align: center;
-        }
-        .GraphContainer{
-            height: 350px; width: 100%; text-align: center;
-        }
-        .GraphContainer h3{
-            margin: 0px auto;
-        }
-        .GraphFrame{
-            height: 300px; width: 100%; display: inline-block;
-        }
-        .liveCheckBox{
-            margin-right: 30px; text-align: right;
-        }
-        md-progress-circular{
-            display:inline-block; text-align:center; margin-top: 50px;
-        }
-        md-list-item.md-3-line, md-list-item.md-3-line>.md-no-style{
-            height: 50px; min-height: 50px;
-        }
-        md-icon{
-            margin-right: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/ens.css">
 </head>
 
 <body>
@@ -49,7 +24,12 @@
                     </md-toolbar>
 
                     <md-content layout-margin="">
-                        <md-list-item class="md-3-line" ng-repeat="item in HFlist" ng-click="HFhistory($event, item)">
+                        <md-list-item class="md-3-line" ng-repeat="item in MenuList" ng-click="pageChange($event, item)">
+                            <div class="md-list-item-text" layout="column"  >
+                                <div ng-value={{item.urls}}><md-icon md-svg-icon={{item.icon_img}}></md-icon>{{ item.name }}</div>
+                            </div>
+                        </md-list-item>
+                        <md-list-item class="md-3-line sub-list-item" ng-repeat="item in HFlist" ng-click="HFhistory($event, item)">
                             <div class="md-list-item-text" layout="column" >
                                 <div ng-value={{item.HFid}}><md-icon md-svg-icon="/img/fire.svg"></md-icon>{{ item.name }}</div>
                             </div>
@@ -134,13 +114,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
     <script type="text/javascript" src="/js/echarts.min.js"></script>
 
-
-
     <script type="text/javascript">
         var myApp = angular.module('MonitoringApp', ['ngMaterial']);
         
         myApp.controller('ToolbarCtrl', function($scope, $interval, $mdSidenav, $window, $location) {
-            
             $interval(function(){
                 $scope.date = new Date();
             },1000);
@@ -151,6 +128,11 @@
                     $mdSidenav(componentId).toggle();
                 };
             }
+
+            $scope.MenuList = [
+                { name : '전체 모니터링', urls : 'main', icon_img: '/img/monitor.svg'},
+                { name : '가열로 이력 검색', urls : 'history', icon_img : '/img/history.svg'}
+            ];
 
             $scope.HFlist = [
                 {
@@ -171,10 +153,14 @@
                 }
             ];
             $scope.HFhistory = function(event, item){
-                var linkURL = 'history/'+item.HFid;
+                var linkURL = "http://" + $window.location.host + "/history/" +item.HFid;
                 $window.location.href = linkURL;
             };
-        });  
+            $scope.pageChange = function(event, item){
+                var linkURL = "http://" + $window.location.host + "/" +item.urls;
+                $window.location = linkURL;
+            }
+        }); 
 
 
         myApp.controller('GraphCtrl', function($scope, $http, $interval, $timeout){

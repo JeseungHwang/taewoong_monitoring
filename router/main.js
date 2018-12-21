@@ -5,9 +5,11 @@ module.exports = function(app, fs)
 		res.render('../views/main.html');
     });
     
+    app.get('/history',function(req,res){
+		res.render('../views/history.html');
+    });
+
     app.get('/history/:HFid',function(req,res){
-    	var HFid = req.params.HFid;
-    	console.log(HFid);
 		res.render('../views/history.html');
     });
 }
