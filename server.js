@@ -7,8 +7,11 @@ var http = require('http');
 var mysql = require('mysql');
 var fs = require("fs");
 var moment = require('moment');
+
 const morgan = require('morgan');
 const flatpickr = require("flatpickr");
+const PORT = 18000;
+const HOST = '0.0.0.0';
 
 app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
@@ -49,6 +52,6 @@ dbConnection.connect(function(err) {
 var r_main = require('./router/main')(app, fs);
 var r_sql = require('./router/sql')(app, fs, mysql, dbConnection, moment);
 
-var server = app.listen(18000, '0.0.0.0', function(){ 
-    console.log('Server is running...');
+var server = app.listen(PORT, HOST, function(){ 
+    console.log('Server is running...(http://'+HOST+':'+PORT+')');
 });

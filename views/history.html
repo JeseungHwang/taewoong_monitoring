@@ -61,6 +61,12 @@
 
     <div class="GraphForm" ng-controller="GraphCtrl">
         <div class="GraphContainer">
+            <div class="UpdateTime-Form">
+                Last Update Time : {{lastUpdateTime}}
+            </div>
+            <div>
+                <h3>가열로 {{heatingFurnaceNumber}}호기 이력 검색</h3>
+            </div>
             <div class="Calendar-Container">
                 <div class="Calendar-Form">
                     <input class="flatpickr flatpickr-input active" type="text" id="startInput" ng-model="pickDateTime.start" readonly="readonly">
@@ -73,11 +79,13 @@
                     <md-button class="md-raised md-primary searchBtn" ng-click="serchData()">Search</md-button>
                 </div>
             </div>
-            <h3>가열로 1호기</h3>
-            <div class="GraphFrame" id="historyGraph" >
-                <md-progress-circular md-mode="indeterminate" md-diameter="80"></md-progress-circular>
+            <md-progress-circular md-mode="indeterminate" md-diameter="80" ng-show="isLoading" ></md-progress-circular>
+            <div class="Graph-Frame" id="historyGraph" >
+                
             </div>
         </div>
+        <hr/>
+        <div>mm</div>
     </div>
     
 	
@@ -145,26 +153,29 @@
 
 
         myApp.controller('GraphCtrl', function($scope, $http, $interval, $timeout, $window, $location){
-            var heatingFurnaceNumber = $window.location.pathname.substring(9,10);
-            if(heatingFurnaceNumber == ''){
-                heatingFurnaceNumber = 1;
+            $scope.heatingFurnaceNumber = $window.location.pathname.substring(9,10);
+            $scope.isLoading = true;
+            if($scope.heatingFurnaceNumber == ''){
+                $scope.heatingFurnaceNumber = 1;
             }
 
-            var gasTimestamp = [];
             var gasAmount = [];
-            var electTimestamp = [];
             var electAmount = [];
-            var temperTimestamp = [];
             var temperAmount = [];
+            var timestamps = [];
 
-            
+            for(var i=120; i>=0; i--){
+                timestamps.push(getNowTime(i));
+            }
 
             $scope.pickDateTime={
-                //end: timeConverter('end'),
-                //start: timeConverter('start')
-                end: '2018-12-05 23:59',
-                start: '2018-12-03 09:00'
+                /*start : '2018-12-24 07:59',
+                end : '2018-12-24 10:00'*/
+                start : timestamps[0],
+                end : timestamps[120]
             };
+
+            $scope.lastUpdateTime='2018-12-24 12:12';
 
             var start = flatpickr("#startInput", {
                 enableTime: true, 
@@ -175,11 +186,38 @@
             });
 
             $scope.serchData = function(){
-                console.log($scope.pickDateTime);
+                gasAmount = [];
+                electAmount = [];
+                temperAmount = [];
+                timestamps = [];
+                $scope.isLoading = true;
+
+                var dom = document.getElementById('historyGraph');
+                var myChart = echarts.dispose(dom);
+                
+                var timeGap = (new Date($scope.pickDateTime.end) - new Date($scope.pickDateTime.start))/(1000*60);
+                
+                for(var i=timeGap; i>=0; i--){
+                    timestamps.push(getNowTime(i));
+                }
                 $scope.getGasInfo();
+                $scope.electricityInfo();
+                $scope.getTemperature();
             }
             
-            function timeConverter(point){
+            function getNowTime(sec){
+                //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec*9) );
+                var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+                var year = nowDate.getFullYear();
+                var month = months[nowDate.getMonth()];
+                var date = nowDate.getDate();
+                var hour = (nowDate.getHours()<10?'0':'')+nowDate.getHours();
+                var min = (nowDate.getMinutes()<10?'0':'')+nowDate.getMinutes();
+                return year+'-'+month+'-'+date+' '+ hour + ':' + min;
+            }
+
+            /*function timeConverter(point){
                 var nowDate = new Date();
                 if(point == 'start'){
                     var prevDate = new Date()-(1000*60*60*2);
@@ -190,25 +228,32 @@
                 var month = months[nowDate.getMonth()];
                 var date = nowDate.getDate();
                 var hour = nowDate.getHours();
-                var min = nowDate.getMinutes();
+                var min = (nowDate.getMinutes()<10?'0':'')+nowDate.getMinutes();
                 return year+'-'+month+'-'+date+' '+ hour + ':' + min;
-            }
+            }*/
             
             $scope.getGasInfo = function(){
                 $http({
                     method  : 'POST',
-                    url     : 'http://localhost:18000/Gas/history/'+heatingFurnaceNumber,
+                    url     : 'http://localhost:18000/Gas/'+$scope.heatingFurnaceNumber,
                     data : $scope.pickDateTime,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
-                    gasTimestamp = [];
                     gasAmount = [];
-                    for (var i = response.data.length-2 ; i >= 0 ; i--) {
-                        gasTimestamp.push(response.data[i].createdAt);
-                        gasAmount.push( (response.data[i].value - response.data[i+1].value) / 10);
+                    var dateIndex = 0;
+                    for (var i = 1 ; i < response.data.length ; i++) {
+                        while(true){
+                            if(timestamps[dateIndex] == response.data[i].createdAt){
+                                gasAmount.push((response.data[i].value - response.data[i-1].value) / 10);
+                                dateIndex++;
+                                break;
+                            }else{
+                                gasAmount.push(0);
+                                dateIndex++;
+                            }
+                        }
                     }
-                    console.log(gasAmount);
                 },function errorCallback(response) {
                   console.log('error occuring : getGasInfo=function');
                 });
@@ -217,18 +262,25 @@
             $scope.electricityInfo = function(){
                 $http({
                     method  : 'POST',
-                    url     : 'http://localhost:18000/Electricity/history/'+heatingFurnaceNumber,
+                    url     : 'http://localhost:18000/Electricity/'+$scope.heatingFurnaceNumber,
                     data : $scope.pickDateTime,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
-                    electTimestamp = [];
                     electAmount = [];
-                    for (var i = response.data.length-2 ; i >= 0 ; i--) {
-                        electTimestamp.push(response.data[i].createdAt);
-                        electAmount.push((response.data[i].value.toFixed(2)));
+                    var dateIndex = 0;
+                    for (var i = 1 ; i < response.data.length ; i++) {
+                        while(true){
+                            if(timestamps[dateIndex] == response.data[i].createdAt){
+                                electAmount.push((response.data[i].value - response.data[i-1].value).toFixed(2));
+                                dateIndex++;
+                                break;
+                            }else{
+                                electAmount.push(0);
+                                dateIndex++;
+                            }
+                        }
                     }
-                    console.log(electAmount);
                 },function errorCallback(response) {
                   console.log('error occuring : electricityInfo=function');
                 });
@@ -237,18 +289,26 @@
             $scope.getTemperature = function(){
                 $http({
                     method  : 'POST',
-                    url     : 'http://localhost:18000/Temperature/history/'+heatingFurnaceNumber,
+                    url     : 'http://localhost:18000/Temperature/'+$scope.heatingFurnaceNumber,
                     data : $scope.pickDateTime,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
-                    temperTimestamp = [];
                     temperAmount = [];
-                    for (var i = response.data.length-2 ; i >= 0 ; i--) {
-                        temperTimestamp.push(response.data[i].createdAt);
-                        temperAmount.push(response.data[i].value/10);
+                    var dateIndex = 0;
+                    for (var i = 1 ; i < response.data.length ; i++) {
+                        while(true){
+                            if(timestamps[dateIndex] == response.data[i].createdAt){
+                                temperAmount.push(response.data[i].value/10);
+                                dateIndex++;
+                                break;
+                            }else{
+                                temperAmount.push(0);
+                                dateIndex++;
+                            }
+                        }
                     }
-                    console.log(temperAmount);
+                    $scope.isLoading = false;
                     setGraphData();
                 },function errorCallback(response) {
                   console.log('error occuring : getTemperature=function');
@@ -291,7 +351,7 @@
                         axisTick: {
                             alignWithLabel: true
                         },
-                        data: gasTimestamp
+                        data: timestamps
                     },
                     yAxis: [
                         {
@@ -339,7 +399,7 @@
                     ],
                     dataZoom: [{
                         type: 'inside',
-                        start: 50,
+                        start: 80,
                         end: 100
                     }, {
                         start: 0,

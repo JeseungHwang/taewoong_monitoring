@@ -2,13 +2,19 @@
     width: 100%; margin: 0; display: inline-block; text-align: center;
 }
 .GraphContainer{
-    height: 350px; width: 100%; text-align: center;
+    height: 450px; width: 100%; text-align: center;
 }
 .GraphContainer h3{
     margin: 15px 0px 15px 0px;
 }
-.GraphFrame{
+.Graph-Frame{
     height: 300px; width: 100%; display: inline-block;
+}
+.UpdateTime-Form{
+    text-align: right;
+    margin-top: 0px;
+    margin-right: 20px;
+    font-weight: bolder;
 }
 .liveCheckBox{
     margin-right: 30px; text-align: right;
