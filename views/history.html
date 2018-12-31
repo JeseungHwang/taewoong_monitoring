@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko" ng-app="MonitoringApp">
 <head>
-	<meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
     <!-- Meta, title, CSS, favicons, etc. -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>ENS Monitoring</title>
+    <title>ENS Monitoring</title>
     <link rel="stylesheet" href="/css/angular-material.1.1.8.min.css">
     <link rel="stylesheet" href="/css/flatpickr.min.css">
+    <link rel="stylesheet" href="/css/ui-grid.css">
     <link rel="stylesheet" href="/css/ens.css">
 </head>
 
 <body>
-	<div ng-controller="ToolbarCtrl" ng-cloak>
+    <div ng-controller="ToolbarCtrl" ng-cloak>
         <div layout="column" ng-cloak="" class="sidenavdemoCustomSidenav">
             <section layout="row" flex="">
                 <md-sidenav class="md-sidenav-left" md-component-id="left" md-disable-backdrop="" md-whiteframe="4">
@@ -61,19 +62,16 @@
 
     <div class="GraphForm" ng-controller="GraphCtrl">
         <div class="GraphContainer">
-            <div class="UpdateTime-Form">
-                Last Update Time : {{lastUpdateTime}}
-            </div>
             <div>
                 <h3>가열로 {{heatingFurnaceNumber}}호기 이력 검색</h3>
             </div>
             <div class="Calendar-Container">
                 <div class="Calendar-Form">
-                    <input class="flatpickr flatpickr-input active" type="text" id="startInput" ng-model="pickDateTime.start" readonly="readonly">
+                    <input class="flatpickr flatpickr-input active" type="text" id="startInput" ng-model="pickDateTime.start"  readonly="readonly">
                 </div>
                 <strong class="CalendarGap">~</strong>
                 <div class="Calendar-Form">
-                    <input class="flatpickr flatpickr-input active" type="text" id="startInput" ng-model="pickDateTime.end" readonly="readonly">
+                    <input class="flatpickr flatpickr-input active" type="text" id="endInput" ng-model="pickDateTime.end"  readonly="readonly">
                 </div>
                 <div class="Calendar-Form">
                     <md-button class="md-raised md-primary searchBtn" ng-click="serchData()">Search</md-button>
@@ -85,26 +83,34 @@
             </div>
         </div>
         <hr/>
-        <div>mm</div>
+        <div class="grid" id="grid1" ui-grid="historyGridOpts" ></div>
     </div>
     
-	
+    
 </body>
-	
-    <!-- Angular Material requires Angular.js Libraries -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-aria.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-messages.min.js"></script>
-
+    
+    <!-- Angular.js Libraries -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular-touch.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular-animate.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular-aria.js"></script>
+    <!-- UI-Grid.js Libraries -->
+    <script src="http://ui-grid.info/docs/grunt-scripts/csv.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/pdfmake.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/vfs_fonts.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/lodash.min.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/jszip.min.js"></script>
+    <script src="http://ui-grid.info/docs/grunt-scripts/excel-builder.dist.js"></script>
+    <script src="http://ui-grid.info/release/ui-grid.js"></script>
     <!-- Angular Material Library -->
     <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
     <script type="text/javascript" src="/js/echarts.min.js"></script>
     <script type="text/javascript" src="/js/flatpickr.js"></script>
+    <!--<script type="text/javascript" src="/js/ui-grid.js"></script>-->
 
 
     <script type="text/javascript">
-        var myApp = angular.module('MonitoringApp', ['ngMaterial']);
+        var myApp = angular.module('MonitoringApp', ['ngMaterial', 'ui.grid']);
         
         myApp.controller('ToolbarCtrl', function($scope, $interval, $mdSidenav, $window, $location) {
             $interval(function(){
@@ -154,7 +160,26 @@
 
         myApp.controller('GraphCtrl', function($scope, $http, $interval, $timeout, $window, $location){
             $scope.heatingFurnaceNumber = $window.location.pathname.substring(9,10);
-            $scope.isLoading = true;
+            $scope.isLoading = true;    // 그래프 데이터 로딩 프로그레스바
+            var basicDateTimeLen = 120; //이력 조회 첫화면에는 현재 시간기준 2시간 전 까지의 데이터 조회
+            var historyData = [];
+            var columDef = [
+                { field: 'Time' , displayName : '시간' },
+                { field: 'Gas_CumUsage' , displayName : '가스 누적지침' },
+                { field: 'Gas' , displayName : '가스 사용량' },
+                { field: 'Elect_CumUsage' , displayName : '전력 누적지침' },
+                { field: 'Electricity' , displayName : '전력 사용량' },
+                { field: 'Temperature1' , displayName : '온도계1' },
+                { field: 'Temperature2' , displayName : '온도계2' }
+            ];
+            
+            $scope.historyGridOpts = {
+                columnDefs: columDef,
+                enableRowSelection: true, 
+                enableRowHeaderSelection: false,
+                data : historyData
+            };
+
             if($scope.heatingFurnaceNumber == ''){
                 $scope.heatingFurnaceNumber = 1;
             }
@@ -164,25 +189,31 @@
             var temperAmount = [];
             var timestamps = [];
 
-            for(var i=120; i>=0; i--){
-                timestamps.push(getNowTime(i));
+            for(var i=basicDateTimeLen; i>=0; i--){
+                var convertedTime = setDateTime(i);
+                timestamps.push(convertedTime);
             }
-
+        
+            
             $scope.pickDateTime={
-                /*start : '2018-12-24 07:59',
-                end : '2018-12-24 10:00'*/
                 start : timestamps[0],
-                end : timestamps[120]
+                end : timestamps[basicDateTimeLen]
             };
 
-            $scope.lastUpdateTime='2018-12-24 12:12';
-
-            var start = flatpickr("#startInput", {
+            var fstart = flatpickr("#startInput", {
                 enableTime: true, 
                 dateFormat: "Y-m-d H:i",
                 disableMobile: true,
                 time_24hr: true,
                 defaultDate : $scope.pickDateTime.start
+            });
+
+            var fend = flatpickr("#endInput", {
+                enableTime: true, 
+                dateFormat: "Y-m-d H:i",
+                disableMobile: true,
+                time_24hr: true,
+                defaultDate : $scope.pickDateTime.end
             });
 
             $scope.serchData = function(){
@@ -191,23 +222,23 @@
                 temperAmount = [];
                 timestamps = [];
                 $scope.isLoading = true;
-
+                
                 var dom = document.getElementById('historyGraph');
                 var myChart = echarts.dispose(dom);
-                
-                var timeGap = (new Date($scope.pickDateTime.end) - new Date($scope.pickDateTime.start))/(1000*60);
-                
-                for(var i=timeGap; i>=0; i--){
-                    timestamps.push(getNowTime(i));
+                var setStartTime = new Date(convertTime($scope.pickDateTime.start, 1));
+                var setEndTime = new Date($scope.pickDateTime.end);
+                var timeGap = (setEndTime - setStartTime)/(1000*60);
+                for(var i=timeGap-1; i>0; i--){
+                    var convertedTime = convertTime($scope.pickDateTime.end, i);
+                    timestamps.push(convertedTime);
+                    $scope.historyGridOpts.data.push({'Time' : convertedTime});
                 }
                 $scope.getGasInfo();
-                $scope.electricityInfo();
-                $scope.getTemperature();
             }
             
-            function getNowTime(sec){
-                //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec*9) );
+            function setDateTime(sec){
                 var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                //var nowDate = new Date( new Date()-(1000*60*sec) );
                 var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
                 var year = nowDate.getFullYear();
                 var month = months[nowDate.getMonth()];
@@ -217,108 +248,151 @@
                 return year+'-'+month+'-'+date+' '+ hour + ':' + min;
             }
 
-            /*function timeConverter(point){
-                var nowDate = new Date();
-                if(point == 'start'){
-                    var prevDate = new Date()-(1000*60*60*2);
-                    nowDate = new Date(prevDate);
-                }
+            function convertTime(dTime, sec){
+                var sTime = new Date(new Date(dTime)-1000*60*sec);
                 var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-                var year = nowDate.getFullYear();
-                var month = months[nowDate.getMonth()];
-                var date = nowDate.getDate();
-                var hour = nowDate.getHours();
-                var min = (nowDate.getMinutes()<10?'0':'')+nowDate.getMinutes();
+                var year = sTime.getFullYear();
+                var month = months[sTime.getMonth()];
+                var date = sTime.getDate();
+                var hour = (sTime.getHours()<10?'0':'')+sTime.getHours();
+                var min = (sTime.getMinutes()<10?'0':'')+sTime.getMinutes();
                 return year+'-'+month+'-'+date+' '+ hour + ':' + min;
-            }*/
+            }
             
             $scope.getGasInfo = function(){
+                var params = {
+                    'start' : convertTime($scope.pickDateTime.start, 1),
+                    'end' : $scope.pickDateTime.end
+                };
                 $http({
                     method  : 'POST',
                     url     : 'http://localhost:18000/Gas/'+$scope.heatingFurnaceNumber,
-                    data : $scope.pickDateTime,
+                    data : params,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
                     gasAmount = [];
+                    var gasUsage = [];
+                    gasUsage[timestamps.length-1] = 0;
+                    var gasTotal = [];
+                    gasTotal[timestamps.length-1] = 0;
                     var dateIndex = 0;
+
                     for (var i = 1 ; i < response.data.length ; i++) {
-                        while(true){
-                            if(timestamps[dateIndex] == response.data[i].createdAt){
-                                gasAmount.push((response.data[i].value - response.data[i-1].value) / 10);
-                                dateIndex++;
-                                break;
-                            }else{
-                                gasAmount.push(0);
-                                dateIndex++;
-                            }
-                        }
+                        var index = timestamps.indexOf(response.data[i].createdAt);
+                        gasUsage[index] = (response.data[i].value - response.data[i-1].value) / 10;
+                        gasTotal[index] = response.data[i].value / 10;
                     }
+                    gasAmount.push({
+                        'usage' : gasUsage,
+                        'total' : gasTotal
+                    });
+                    $scope.getElectricityInfo();
                 },function errorCallback(response) {
                   console.log('error occuring : getGasInfo=function');
                 });
             }
 
-            $scope.electricityInfo = function(){
+            $scope.getElectricityInfo = function(){
+                var params = {
+                    'start' : convertTime($scope.pickDateTime.start, 1),
+                    'end' : $scope.pickDateTime.end
+                };
                 $http({
                     method  : 'POST',
                     url     : 'http://localhost:18000/Electricity/'+$scope.heatingFurnaceNumber,
-                    data : $scope.pickDateTime,
+                    data : params,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
                     electAmount = [];
+                    var electUsage = [];
+                    electUsage[timestamps.length-1] = 0;
+                    var electTotal = [];
+                    electTotal[timestamps.length-1] = 0;
                     var dateIndex = 0;
+
                     for (var i = 1 ; i < response.data.length ; i++) {
-                        while(true){
-                            if(timestamps[dateIndex] == response.data[i].createdAt){
-                                electAmount.push((response.data[i].value - response.data[i-1].value).toFixed(2));
-                                dateIndex++;
-                                break;
-                            }else{
-                                electAmount.push(0);
-                                dateIndex++;
-                            }
-                        }
+                        var index = timestamps.indexOf(response.data[i].createdAt);
+                        electUsage[index] = (response.data[i].value - response.data[i-1].value).toFixed(2);
+                        electTotal[index] = response.data[i].value.toFixed(2);
                     }
+                    electAmount.push({
+                        'usage' : electUsage,
+                        'total' : electTotal
+                    });
+                    $scope.getTemperature1();
                 },function errorCallback(response) {
                   console.log('error occuring : electricityInfo=function');
                 });
             }
 
-            $scope.getTemperature = function(){
+            $scope.getTemperature1 = function(){
+                var params = {
+                    'start' : convertTime($scope.pickDateTime.start, 1),
+                    'end' : $scope.pickDateTime.end,
+                    'tKind' : '1'
+                };
                 $http({
                     method  : 'POST',
                     url     : 'http://localhost:18000/Temperature/'+$scope.heatingFurnaceNumber,
-                    data : $scope.pickDateTime,
+                    data : params,
                     config: 'Content-Type: application/json;'
                 }).
                 then(function successCallback(response) {
                     temperAmount = [];
+                    var temper1Usage = [];
+                    temper1Usage[timestamps.length-1] = 0;
                     var dateIndex = 0;
+
                     for (var i = 1 ; i < response.data.length ; i++) {
-                        while(true){
-                            if(timestamps[dateIndex] == response.data[i].createdAt){
-                                temperAmount.push(response.data[i].value/10);
-                                dateIndex++;
-                                break;
-                            }else{
-                                temperAmount.push(0);
-                                dateIndex++;
-                            }
-                        }
+                        var index = timestamps.indexOf(response.data[i].createdAt);
+                        temper1Usage[index] = response.data[i].value/10;
                     }
+                    temperAmount.push({
+                        'temper1' : temper1Usage
+                    });
+                    $scope.getTemperature2();
+                },function errorCallback(response) {
+                  console.log('error occuring : getTemperature1=function');
+                });
+            }
+
+            $scope.getTemperature2 = function(){
+                var params = {
+                    'start' : convertTime($scope.pickDateTime.start, 1),
+                    'end' : $scope.pickDateTime.end,
+                    'tKind' : '2'
+                };
+                $http({
+                    method  : 'POST',
+                    url     : 'http://localhost:18000/Temperature/'+$scope.heatingFurnaceNumber,
+                    data : params,
+                    config: 'Content-Type: application/json;'
+                }).
+                then(function successCallback(response) {
+                    var temper2Usage = [];
+                    temper2Usage[timestamps.length-1] = 0;
+                    var dateIndex = 0;
+
+                    for (var i = 1 ; i < response.data.length ; i++) {
+                        var index = timestamps.indexOf(response.data[i].createdAt);
+                        temper2Usage[index] = response.data[i].value/10;
+                    }
+                    temperAmount.push({
+                        'temper2' : temper2Usage
+                    });
                     $scope.isLoading = false;
                     setGraphData();
                 },function errorCallback(response) {
-                  console.log('error occuring : getTemperature=function');
+                  console.log('error occuring : getTemperature2=function');
                 });
             }
 
             // funtion setGraphData()
             // 설명 : 그래프를 그리기 위한 정보를 Set 하는 함수
             function setGraphData(){
-                var colors = ['#009966', '#0000FF'];
+                var colors = ['#009966', '#0000FF', '#CC6600'];
                 var dom = document.getElementById('historyGraph');
                 var myChart = echarts.init(dom);
                 var app = {};
@@ -343,7 +417,7 @@
                         }
                     },
                     legend: {
-                        data:['가스','전력','온도']
+                        data:['가스','전력','온도1','온도2']
                     },
                     xAxis: {
                         type: 'category',
@@ -380,13 +454,31 @@
                         },{
                             type: 'value',
                             position: 'right',
-                            name : '온도(C)',
+                            name : '온도1(C)',
                             offset: 80,
                             min: 0,
                             max: 1500,
                             axisLine: {
                                 lineStyle: {
                                     color: colors[1]
+                                }
+                            },
+                            axisLabel: {
+                                formatter: '{value} °C'
+                            },
+                            nameTextStyle :{
+                                fontWeight : 'bold'
+                            }
+                        },{
+                            type: 'value',
+                            position: 'right',
+                            name : '온도2(C)',
+                            offset: 150,
+                            min: 0,
+                            max: 1500,
+                            axisLine: {
+                                lineStyle: {
+                                    color: colors[2]
                                 }
                             },
                             axisLabel: {
@@ -434,7 +526,7 @@
                                     color: 'rgb(255, 70, 131)'
                                 }])
                             },
-                            data: gasAmount
+                            data: gasAmount[0].usage
                         },
                         {
                             name:'전력',
@@ -448,9 +540,9 @@
                                     color: colors[0]
                                 }
                             },
-                            data: electAmount
+                            data: electAmount[0].usage
                         },{
-                            name:'온도',
+                            name:'온도1',
                             type:'line',
                             yAxisIndex: 2,
                             itemStyle: {
@@ -461,7 +553,20 @@
                                     color: colors[1]
                                 }
                             },
-                            data: temperAmount
+                            data: temperAmount[0].temper1
+                        },{
+                            name:'온도2',
+                            type:'line',
+                            yAxisIndex: 3,
+                            itemStyle: {
+                                color: colors[2]
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    color: colors[2]
+                                }
+                            },
+                            data: temperAmount[1].temper2
                         }
                     ]
                 };
@@ -469,11 +574,24 @@
                 if (option && typeof option === "object") {
                     myChart.setOption(option, true);
                 }
+                setGridData();
             }
             
+            function setGridData(){
+                for(var i=0; i<timestamps.length; i++){
+                    $scope.historyGridOpts.data.push({
+                        'Time' : timestamps[i],
+                        'Gas_CumUsage' : gasAmount[0].total[i],
+                        'Gas' : gasAmount[0].usage[i],
+                        'Elect_CumUsage' : electAmount[0].total[i],
+                        'Electricity' : electAmount[0].usage[i],
+                        'Temperature1' : temperAmount[0].temper1[i],
+                        'Temperature2' : temperAmount[1].temper2[i]
+                    });
+                }
+            }
+
             $scope.getGasInfo();
-            $scope.electricityInfo();
-            $scope.getTemperature();
         });
         
     </script>

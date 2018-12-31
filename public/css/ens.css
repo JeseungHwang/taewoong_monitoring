@@ -10,12 +10,7 @@
 .Graph-Frame{
     height: 300px; width: 100%; display: inline-block;
 }
-.UpdateTime-Form{
-    text-align: right;
-    margin-top: 0px;
-    margin-right: 20px;
-    font-weight: bolder;
-}
+
 .liveCheckBox{
     margin-right: 30px; text-align: right;
 }
@@ -39,6 +34,9 @@ md-icon{
 .Calendar-Form{
     display:inline-block;
 }
+.Calendar-Form input{
+    font-weight: bold;
+}
 .CalendarGap{
     margin-left: 15px;
     margin-right: 15px;
@@ -52,4 +50,8 @@ span>md-icon{
 }
 .md-raised.md-primary.searchBtn{
     margin-top: 0;
+}
+.grid {
+    width: 97%;
+    height: 350px;
 }

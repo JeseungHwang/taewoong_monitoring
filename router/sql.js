@@ -23,21 +23,8 @@ module.exports = function(app, fs, mysql, connection, moment)
         });
     });
 
-    /*app.post('/Gas/history/:heatingFurnaceNumber', function(req, res){
-      var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].gas, req.body.start, req.body.end];
-      connection.query('SELECT * from iiot WHERE id = ? AND name = "보정적산량" AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt DESC', params ,function(err,result,rows){
-          if (err){
-              res.send('Select query Error [Code : 0001]');
-              return;
-            }
-            result = setDateFormat(result);
-            res.send(result)
-        });
-    });*/
-
     app.post('/Electricity/:heatingFurnaceNumber', function(req, res){
       var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].elect, req.body.start, req.body.end];
-      //connection.query('SELECT * from iiot WHERE id = ? AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt ASC', params ,function(err,result,rows){
       connection.query('SELECT * from iiot WHERE id = ? AND timestamp(createdAt) BETWEEN ? AND ? GROUP BY UNIX_TIMESTAMP(createdAt) DIV 60 ORDER BY createdAt ASC ', params ,function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 0001]');
@@ -48,20 +35,9 @@ module.exports = function(app, fs, mysql, connection, moment)
         });
     });
 
-    /*app.post('/Electricity/history/:heatingFurnaceNumber', function(req, res){
-      var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].elect, req.body.start, req.body.end];
-      connection.query('SELECT * from iiot WHERE id = ? AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt DESC', params ,function(err,result,rows){
-          if (err){
-              res.send('Select query Error [Code : 0001]');
-              return;
-            }
-            result = setDateFormat(result);
-            res.send(result)
-        });
-    });*/
-
     app.post('/Temperature/:heatingFurnaceNumber', function(req, res){
-      var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper1, req.body.start, req.body.end];
+      var temprKind = req.body.tKind == '1' ? heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper1 : heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper2;
+      var params = [temprKind, req.body.start, req.body.end];
       connection.query('SELECT * from iiot WHERE id = ? AND timestamp(createdAt) BETWEEN ? AND ? GROUP BY UNIX_TIMESTAMP(createdAt) DIV 60 ORDER BY createdAt ASC', params ,function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 0001]');
@@ -71,18 +47,6 @@ module.exports = function(app, fs, mysql, connection, moment)
             res.send(result)
         });
     });
-
-    /*app.post('/Temperature/history/:heatingFurnaceNumber', function(req, res){
-      var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].temper1, req.body.start, req.body.end];
-      connection.query('SELECT * from iiot WHERE id = ? AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt DESC', params ,function(err,result,rows){
-          if (err){
-              res.send('Select query Error [Code : 0001]');
-              return;
-            }
-            result = setDateFormat(result);
-            res.send(result)
-        });
-    });*/
 
     function setDateFormat(result){
       for (row in result){

@@ -167,6 +167,7 @@
             $scope.heatingFurnaceList = [] ;
             $scope.liveCheckbox = true;
             var updateInterv = undefined;
+            var basicDateTimeLen = 120;
 
             $scope.HeatingFurnaceClass = function(heatingFurnaceNumber){
                 var heatingFurnaceNumber = heatingFurnaceNumber;
@@ -176,7 +177,7 @@
                 var temperAmount = [];
                 var timestamps = [];
                 
-                function getNowTime(sec){
+                function setDateTime(sec){
                     //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec*9) );
                     var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
                     var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
@@ -188,94 +189,135 @@
                     return year+'-'+month+'-'+date+' '+ hour + ':' + min;
                 }
 
-                for(var i=120; i>=0; i--){
-                    timestamps.push(getNowTime(i));
+                for(var i=basicDateTimeLen; i>=0; i--){
+                    timestamps.push(setDateTime(i));
                 }
 
-
                 $scope.pickDateTime={
-                    //start: timestamps[timestamps.length-1],
-                    //end: timestamps[0]
-                    start : '2018-12-24 07:59',
-                    end : '2018-12-24 10:00'
+                    start : timestamps[0],
+                    end : timestamps[basicDateTimeLen]
                 };
 
                 $scope.getGasInfo = function(){
+                    var params = {
+                        'start' : $scope.pickDateTime.start,
+                        'end' : $scope.pickDateTime.end
+                    };
                     $http({
                         method  : 'POST',
                         url     : 'http://localhost:18000/Gas/'+heatingFurnaceNumber,
-                        data : $scope.pickDateTime,
+                        data : params,
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
                         gasAmount = [];
+                        var gasUsage = [];
+                        gasUsage[timestamps.length-1] = 0;
+                        var gasTotal = [];
+                        gasTotal[timestamps.length-1] = 0;
                         var dateIndex = 0;
+
                         for (var i = 1 ; i < response.data.length ; i++) {
-                            while(true){
-                                if(timestamps[dateIndex] == response.data[i].createdAt){
-                                    gasAmount.push((response.data[i].value - response.data[i-1].value) / 10);
-                                    dateIndex++;
-                                    break;
-                                }else{
-                                    gasAmount.push(0);
-                                    dateIndex++;
-                                }
-                            }
+                            var index = timestamps.indexOf(response.data[i].createdAt);
+                            gasUsage[index] = (response.data[i].value - response.data[i-1].value) / 10;
+                            gasTotal[index] = response.data[i].value / 10;
                         }
+                        gasAmount.push({
+                            'usage' : gasUsage,
+                            'total' : gasTotal
+                        });
                     },function errorCallback(response) {
                       console.log('error occuring : getGasInfo=function');
                     });
                 }
 
-                $scope.electricityInfo = function(){
+                $scope.getElectricityInfo = function(){
+                    var params = {
+                        'start' : $scope.pickDateTime.start,
+                        'end' : $scope.pickDateTime.end
+                    };                    
                     $http({
                         method  : 'POST',
                         url     : 'http://localhost:18000/Electricity/'+heatingFurnaceNumber,
-                        data : $scope.pickDateTime,
+                        data : params,
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
                         electAmount = [];
+                        var electUsage = [];
+                        electUsage[timestamps.length-1] = 0;
+                        var electTotal = [];
+                        electTotal[timestamps.length-1] = 0;
                         var dateIndex = 0;
+
                         for (var i = 1 ; i < response.data.length ; i++) {
-                            while(true){
-                                if(timestamps[dateIndex] == response.data[i].createdAt){
-                                    electAmount.push((response.data[i].value - response.data[i-1].value).toFixed(2));
-                                    dateIndex++;
-                                    break;
-                                }else{
-                                    electAmount.push(0);
-                                    dateIndex++;
-                                }
-                            }
+                            var index = timestamps.indexOf(response.data[i].createdAt);
+                            electUsage[index] = (response.data[i].value - response.data[i-1].value).toFixed(2);
+                            electTotal[index] = response.data[i].value.toFixed(2);
                         }
+                        electAmount.push({
+                            'usage' : electUsage,
+                            'total' : electTotal
+                        });
                     },function errorCallback(response) {
-                      console.log('error occuring : electricityInfo=function');
+                      console.log('error occuring : getElectricityInfo=function');
                     });
                 }
 
-                $scope.getTemperature = function(){
+                $scope.getTemperature1 = function(){
+                    var params = {
+                        'start' : $scope.pickDateTime.start,
+                        'end' : $scope.pickDateTime.end,
+                        'tKind' : '1'
+                    };                    
                     $http({
                         method  : 'POST',
                         url     : 'http://localhost:18000/Temperature/'+heatingFurnaceNumber,
-                        data : $scope.pickDateTime,
+                        data : params,
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
                         temperAmount = [];
+                        var temper1Usage = [];
+                        temper1Usage[timestamps.length-1] = 0;
                         var dateIndex = 0;
+
                         for (var i = 1 ; i < response.data.length ; i++) {
-                            while(true){
-                                if(timestamps[dateIndex] == response.data[i].createdAt){
-                                    temperAmount.push(response.data[i].value/10);
-                                    dateIndex++;
-                                    break;
-                                }else{
-                                    temperAmount.push(0);
-                                    dateIndex++;
-                                }
-                            }
+                            var index = timestamps.indexOf(response.data[i].createdAt);
+                            temper1Usage[index] = response.data[i].value/10;
                         }
+                        temperAmount.push({
+                            'temper1' : temper1Usage
+                        });
+                    },function errorCallback(response) {
+                      console.log('error occuring : getTemperature=function');
+                    });
+                }
+
+                $scope.getTemperature2 = function(){
+                    var params = {
+                        'start' : $scope.pickDateTime.start,
+                        'end' : $scope.pickDateTime.end,
+                        'tKind' : '2'
+                    };  
+                    $http({
+                        method  : 'POST',
+                        url     : 'http://localhost:18000/Temperature/'+heatingFurnaceNumber,
+                        data : params,
+                        config: 'Content-Type: application/json;'
+                    }).
+                    then(function successCallback(response) {
+                        var temper2Usage = [];
+                        temper2Usage[timestamps.length-1] = 0;
+                        var dateIndex = 0;
+
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt);
+                            temper2Usage[index] = response.data[i].value/10;
+                        }
+                        temperAmount.push({
+                            'temper2' : temper2Usage
+                        });
                         setGraphData();
                     },function errorCallback(response) {
                       console.log('error occuring : getTemperature=function');
@@ -285,7 +327,7 @@
                 // funtion setGraphData()
                 // 설명 : 그래프를 그리기 위한 정보를 Set 하는 함수
                 function setGraphData(){
-                    var colors = ['#009966', '#0000FF'];
+                    var colors = ['#009966', '#0000FF', '#CC6600'];
                     var dom = document.getElementById(grapID);
                     var myChart = echarts.init(dom);
                     var app = {};
@@ -310,7 +352,7 @@
                             }
                         },
                         legend: {
-                            data:['가스','전력','온도']
+                            data:['가스','전력','온도1','온도2']
                         },
                         xAxis: {
                             type: 'category',
@@ -362,6 +404,24 @@
                                 nameTextStyle :{
                                     fontWeight : 'bold'
                                 }
+                            },{
+                                type: 'value',
+                                position: 'right',
+                                name : '온도2(C)',
+                                offset: 150,
+                                min: 0,
+                                max: 1500,
+                                axisLine: {
+                                    lineStyle: {
+                                        color: colors[2]
+                                    }
+                                },
+                                axisLabel: {
+                                    formatter: '{value} °C'
+                                },
+                                nameTextStyle :{
+                                    fontWeight : 'bold'
+                                }
                             }
                         ],
                         dataZoom: [{
@@ -401,7 +461,7 @@
                                         color: 'rgb(255, 70, 131)'
                                     }])
                                 },
-                                data: gasAmount
+                                data: gasAmount[0].usage
                             },
                             {
                                 name:'전력',
@@ -415,9 +475,9 @@
                                         color: colors[0]
                                     }
                                 },
-                                data: electAmount
+                                data: electAmount[0].usage
                             },{
-                                name:'온도',
+                                name:'온도1',
                                 type:'line',
                                 yAxisIndex: 2,
                                 itemStyle: {
@@ -428,7 +488,20 @@
                                         color: colors[1]
                                     }
                                 },
-                                data: temperAmount
+                                data: temperAmount[0].temper1
+                            },{
+                                name:'온도2',
+                                type:'line',
+                                yAxisIndex: 3,
+                                itemStyle: {
+                                    color: colors[2]
+                                },
+                                axisLine: {
+                                    lineStyle: {
+                                        color: colors[2]
+                                    }
+                                },
+                                data: temperAmount[1].temper2
                             }
                         ]
                     };
@@ -442,8 +515,9 @@
                 
 
                 $scope.getGasInfo();
-                $scope.electricityInfo();
-                $scope.getTemperature();
+                $scope.getElectricityInfo();
+                $scope.getTemperature1();
+                $scope.getTemperature2();
 
                 setUpdateInterval();
 
@@ -452,10 +526,11 @@
                         if($scope.liveCheckbox){
                             console.log("load Data");
                             $scope.getGasInfo();
-                            $scope.electricityInfo();
-                            $scope.getTemperature();
+                            $scope.getElectricityInfo();
+                            $scope.getTemperature1();
+                            $scope.getTemperature2();
                         }
-                    },30000);
+                    },60000);
                 }
 
             }//$scope.HeatingFurnaceClass = function 
