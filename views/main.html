@@ -178,8 +178,8 @@
                 var timestamps = [];
                 
                 function setDateTime(sec){
-                    //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
-                    var nowDate = new Date( new Date()-(1000*60*sec) );
+                    var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                    //var nowDate = new Date( new Date()-(1000*60*sec) );
                     var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
                     var year = nowDate.getFullYear();
                     var month = months[nowDate.getMonth()];
@@ -212,16 +212,19 @@
                     then(function successCallback(response) {
                         gasAmount = [];
                         var gasUsage = [];
-                        gasUsage[timestamps.length-1] = 0;
                         var gasTotal = [];
-                        gasTotal[timestamps.length-1] = 0;
                         var dateIndex = 0;
-
+                        for (var i = 0 ; i < timestamps.length ; i++) {
+                            gasUsage[i] = 0;
+                            gasTotal[i] = 0;
+                        }
+                        
                         for (var i = 1 ; i < response.data.length ; i++) {
                             var index = timestamps.indexOf(response.data[i].createdAt);
                             gasUsage[index] = (response.data[i].value - response.data[i-1].value) / 10;
                             gasTotal[index] = response.data[i].value / 10;
                         }
+
                         gasAmount.push({
                             'usage' : gasUsage,
                             'total' : gasTotal
@@ -245,10 +248,12 @@
                     then(function successCallback(response) {
                         electAmount = [];
                         var electUsage = [];
-                        electUsage[timestamps.length-1] = 0;
                         var electTotal = [];
-                        electTotal[timestamps.length-1] = 0;
                         var dateIndex = 0;
+                        for (var i = 0 ; i < timestamps.length ; i++) {
+                            electUsage[i] = 0;
+                            electTotal[i] = 0;
+                        }
 
                         for (var i = 1 ; i < response.data.length ; i++) {
                             var index = timestamps.indexOf(response.data[i].createdAt);
@@ -279,8 +284,10 @@
                     then(function successCallback(response) {
                         temperAmount = [];
                         var temper1Usage = [];
-                        temper1Usage[timestamps.length-1] = 0;
                         var dateIndex = 0;
+                        for (var i = 0 ; i < timestamps.length ; i++) {
+                            temper1Usage[i] = 0;
+                        }
 
                         for (var i = 1 ; i < response.data.length ; i++) {
                             var index = timestamps.indexOf(response.data[i].createdAt);
@@ -308,8 +315,10 @@
                     }).
                     then(function successCallback(response) {
                         var temper2Usage = [];
-                        temper2Usage[timestamps.length-1] = 0;
                         var dateIndex = 0;
+                        for (var i = 0 ; i < timestamps.length ; i++) {
+                            temper2Usage[i] = 0;
+                        }
 
                         for (var i = 1 ; i < response.data.length ; i++) {
                             var index = timestamps.indexOf(response.data[i].createdAt);
