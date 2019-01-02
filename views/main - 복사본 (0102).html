@@ -164,13 +164,13 @@
 
 
         myApp.controller('GraphCtrl', function($scope, $http, $interval, $timeout){
-            var heatingFurnaceList = [] ;
+            $scope.heatingFurnaceList = [] ;
+            $scope.liveCheckbox = true;
             var updateInterv = undefined;
             var basicDateTimeLen = 120;
-            $scope.liveCheckbox = true;
 
-            function HeatingFurnaceClass(heatingFurnaceNumber){
-                var heatingFurnaceNumber = heatingFurnaceNumber;
+            $scope.HeatingFurnaceClass = function(heatingFurnaceNumber){
+                this.heatingFurnaceNumber = heatingFurnaceNumber;
                 var grapID = heatingFurnaceNumber+'hogi'
                 var gasAmount = [];
                 var electAmount = [];
@@ -198,7 +198,8 @@
                     end : timestamps[basicDateTimeLen]
                 };
 
-                function getGasInfo(){
+                $scope.getGasInfo = function(){
+                    console.log('gas:'+heatingFurnaceNumber);
                     var params = {
                         'start' : $scope.pickDateTime.start,
                         'end' : $scope.pickDateTime.end
@@ -234,7 +235,8 @@
                     });
                 }
 
-                function getElectricityInfo(){
+                $scope.getElectricityInfo = function(){
+                    console.log('elect:'+heatingFurnaceNumber);
                     var params = {
                         'start' : $scope.pickDateTime.start,
                         'end' : $scope.pickDateTime.end
@@ -269,7 +271,8 @@
                     });
                 }
 
-                function getTemperature1(){
+                $scope.getTemperature1 = function(){
+                    console.log('temper:'+heatingFurnaceNumber);
                     var params = {
                         'start' : $scope.pickDateTime.start,
                         'end' : $scope.pickDateTime.end,
@@ -301,7 +304,8 @@
                     });
                 }
 
-                function getTemperature2(){
+                $scope.getTemperature2 = function(){
+                    console.log('temper:'+heatingFurnaceNumber);
                     var params = {
                         'start' : $scope.pickDateTime.start,
                         'end' : $scope.pickDateTime.end,
@@ -523,31 +527,34 @@
 
                 
 
-                getGasInfo();
-                getElectricityInfo();
-                getTemperature1();
-                getTemperature2();
+                $scope.getGasInfo();
+                $scope.getElectricityInfo();
+                $scope.getTemperature1();
+                $scope.getTemperature2();
+
                 setUpdateInterval();
 
                 function setUpdateInterval(){
                     updateInterv = $interval(function(){
                         if($scope.liveCheckbox){
                             console.log("load Data");
-                            getGasInfo();
-                            getElectricityInfo();
-                            getTemperature1();
-                            getTemperature2();
+                            console.log(heatingFurnaceNumber);
+                            $scope.getGasInfo();
+                            $scope.getElectricityInfo();
+                            $scope.getTemperature1();
+                            $scope.getTemperature2();
                         }
-                    },60000);
+                    },20000);
                 }
 
             }//$scope.HeatingFurnaceClass = function 
 
             //Gas 사용량 정보를 담은 Class 객체 생성하여 heatingFurnaceList에 추가
             for(var i=1 ; i<=5 ; i++){
-                var HFclass = new HeatingFurnaceClass(i);
-                heatingFurnaceList.push(HFclass);
+                $scope.heatingFurnaceList.push(new $scope.HeatingFurnaceClass(i));
             }
+
+            //$scope.getGasInfo();
 
             
         });
