@@ -31,6 +31,7 @@ var dbConnection = mysql.createConnection({
 })
 */
 // Maria DB 커넥션 풀
+
 var dbConnection = mysql.createConnection({
 	host:'127.0.0.1',
 	port:3307,

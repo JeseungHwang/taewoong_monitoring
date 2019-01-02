@@ -178,12 +178,12 @@
                 var timestamps = [];
                 
                 function setDateTime(sec){
-                    //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec*9) );
-                    var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                    //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                    var nowDate = new Date( new Date()-(1000*60*sec) );
                     var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
                     var year = nowDate.getFullYear();
                     var month = months[nowDate.getMonth()];
-                    var date = nowDate.getDate();
+                    var date = (nowDate.getDate()<10?'0':'')+nowDate.getDate();
                     var hour = (nowDate.getHours()<10?'0':'')+nowDate.getHours();
                     var min = (nowDate.getMinutes()<10?'0':'')+nowDate.getMinutes();
                     return year+'-'+month+'-'+date+' '+ hour + ':' + min;
