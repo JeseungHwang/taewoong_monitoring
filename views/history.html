@@ -224,7 +224,6 @@
                 temperAmount = [];
                 timestamps = [];
                 $scope.isLoading = true;
-                
                 var dom = document.getElementById('historyGraph');
                 var myChart = echarts.dispose(dom);
                 var setStartTime = new Date(convertTime($scope.pickDateTime.start, 1));
@@ -580,15 +579,23 @@
             }
             
             function setGridData(){
+                $scope.historyGridOpts.data = [];
                 for(var i=timestamps.length-1; i>=0; i--){
+                    var gas_cumusage = (typeof gasAmount[0].total[i]) != 'undefined' ? gasAmount[0].total[i] : '0';
+                    var gas_usage = (typeof gasAmount[0].usage[i]) != 'undefined' ? gasAmount[0].usage[i] : '0';
+                    var elect_cumusage = (typeof electAmount[0].total[i]) != 'undefined' ? electAmount[0].total[i] : '0';
+                    var elect_usage = (typeof electAmount[0].usage[i]) != 'undefined' ? electAmount[0].usage[i] : '0';
+                    var temper1 = (typeof temperAmount[0].temper1[i]) != 'undefined' ? temperAmount[0].temper1[i] : '0';
+                    var temper2 = (typeof temperAmount[1].temper2[i]) != 'undefined' ? temperAmount[1].temper2[i] : '0';
+                    
                     $scope.historyGridOpts.data.push({
                         'Time' : timestamps[i],
-                        'Gas_CumUsage' : gasAmount[0].total[i],
-                        'Gas' : gasAmount[0].usage[i],
-                        'Elect_CumUsage' : electAmount[0].total[i],
-                        'Electricity' : electAmount[0].usage[i],
-                        'Temperature1' : temperAmount[0].temper1[i],
-                        'Temperature2' : temperAmount[1].temper2[i]
+                        'Gas_CumUsage' : gas_cumusage,
+                        'Gas' : gas_usage,
+                        'Elect_CumUsage' : elect_cumusage,
+                        'Electricity' : elect_usage,
+                        'Temperature1' : temper1,
+                        'Temperature2' : temper2
                     });
                 }
             }
