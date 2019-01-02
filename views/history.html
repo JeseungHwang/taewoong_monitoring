@@ -83,7 +83,9 @@
             </div>
         </div>
         <hr/>
-        <div class="grid" id="grid1" ui-grid="historyGridOpts" ></div>
+        <div class="GridContainer">
+            <div class="grid" id="grid1" ui-grid="historyGridOpts" ></div>
+        </div>
     </div>
     
     
@@ -168,9 +170,9 @@
                 { field: 'Gas_CumUsage' , displayName : '가스 누적지침' },
                 { field: 'Gas' , displayName : '가스 사용량' },
                 { field: 'Elect_CumUsage' , displayName : '전력 누적지침' },
-                { field: 'Electricity' , displayName : '전력 사용량' },
-                { field: 'Temperature1' , displayName : '온도계1' },
-                { field: 'Temperature2' , displayName : '온도계2' }
+                { field: 'Electricity' , displayName : '전력 사용량(kWh)' },
+                { field: 'Temperature1' , displayName : '온도계1(°C)' },
+                { field: 'Temperature2' , displayName : '온도계2(°C)' }
             ];
             
             $scope.historyGridOpts = {
@@ -237,8 +239,8 @@
             }
             
             function setDateTime(sec){
-                var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
-                //var nowDate = new Date( new Date()-(1000*60*sec) );
+                //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                var nowDate = new Date( new Date()-(1000*60*sec) );
                 var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
                 var year = nowDate.getFullYear();
                 var month = months[nowDate.getMonth()];
@@ -578,7 +580,7 @@
             }
             
             function setGridData(){
-                for(var i=0; i<timestamps.length; i++){
+                for(var i=timestamps.length-1; i>=0; i--){
                     $scope.historyGridOpts.data.push({
                         'Time' : timestamps[i],
                         'Gas_CumUsage' : gasAmount[0].total[i],

@@ -2,7 +2,7 @@
     width: 100%; margin: 0; display: inline-block; text-align: center;
 }
 .GraphContainer{
-    height: 450px; width: 100%; text-align: center;
+    height: 420px; width: 100%; text-align: center;
 }
 .GraphContainer h3{
     margin: 15px 0px 15px 0px;
@@ -51,7 +51,16 @@ span>md-icon{
 .md-raised.md-primary.searchBtn{
     margin-top: 0;
 }
-.grid {
+.GridContainer{
+    width: 100%;
+    height: 380px;
+    text-align: center;
+}
+.GridContainer .grid {
     width: 97%;
     height: 350px;
+    display: inline-block;
+}
+hr{
+    margin-bottom: 20px;
 }
