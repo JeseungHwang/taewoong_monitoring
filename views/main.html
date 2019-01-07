@@ -229,11 +229,7 @@
                             'usage' : gasUsage,
                             'total' : gasTotal
                         });
-                    })
-                    ,finally(function(){
-                        getElectricityInfo();
-                    })
-                    ,function errorCallback(response) {
+                    },function errorCallback(response) {
                       console.log('error occuring : getGasInfo=function');
                     });
                 }
@@ -268,10 +264,7 @@
                             'usage' : electUsage,
                             'total' : electTotal
                         });
-                    }),finally(function(){
-                        getTemperature1();
-                    })
-                    ,function errorCallback(response) {
+                    },function errorCallback(response) {
                       console.log('error occuring : getElectricityInfo=function');
                     });
                 }
@@ -303,12 +296,7 @@
                         temperAmount.push({
                             'temper1' : temper1Usage
                         });
-                        getTemperature2();
-                    })
-                    ,finally(function(){
-                        getTemperature2();
-                    })
-                    ,function errorCallback(response) {
+                    },function errorCallback(response) {
                       console.log('error occuring : getTemperature=function');
                     });
                 }
@@ -536,6 +524,9 @@
                 
 
                 getGasInfo();
+                getElectricityInfo();
+                getTemperature1();
+                getTemperature2();
                 setUpdateInterval();
 
                 function setUpdateInterval(){
@@ -546,7 +537,11 @@
                             for(var i=basicDateTimeLen; i>=0; i--){
                                 timestamps.push(setDateTime(i));
                             }
+
                             getGasInfo();
+                            getElectricityInfo();
+                            getTemperature1();
+                            getTemperature2();
                         }
                     },60000);
                 }
