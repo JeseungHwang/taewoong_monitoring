@@ -205,7 +205,7 @@
                     };
                     $http({
                         method  : 'POST',
-                        url     : 'http://210.223.173.191:18000/Gas/'+heatingFurnaceNumber,
+                        url     : 'http://localhost:18000/Gas/'+heatingFurnaceNumber,
                         data : params,
                         config: 'Content-Type: application/json;'
                     }).
@@ -241,7 +241,7 @@
                     };                    
                     $http({
                         method  : 'POST',
-                        url     : 'http://210.223.173.191:18000/Electricity/'+heatingFurnaceNumber,
+                        url     : 'http://localhost:18000/Electricity/'+heatingFurnaceNumber,
                         data : params,
                         config: 'Content-Type: application/json;'
                     }).
@@ -277,7 +277,7 @@
                     };                    
                     $http({
                         method  : 'POST',
-                        url     : 'http://210.223.173.191:18000/Temperature/'+heatingFurnaceNumber,
+                        url     : 'http://localhost:18000/Temperature/'+heatingFurnaceNumber,
                         data : params,
                         config: 'Content-Type: application/json;'
                     }).
@@ -309,7 +309,7 @@
                     };  
                     $http({
                         method  : 'POST',
-                        url     : 'http://210.223.173.191:18000/Temperature/'+heatingFurnaceNumber,
+                        url     : 'http://localhost:18000/Temperature/'+heatingFurnaceNumber,
                         data : params,
                         config: 'Content-Type: application/json;'
                     }).
