@@ -193,15 +193,15 @@
                     timestamps.push(setDateTime(i));
                 }
 
-                $scope.pickDateTime={
+                var pickDateTime={
                     start : timestamps[0],
                     end : timestamps[basicDateTimeLen]
                 };
 
                 function getGasInfo(){
                     var params = {
-                        'start' : $scope.pickDateTime.start,
-                        'end' : $scope.pickDateTime.end
+                        'start' : pickDateTime.start,
+                        'end' : pickDateTime.end
                     };
                     $http({
                         method  : 'POST',
@@ -236,8 +236,8 @@
 
                 function getElectricityInfo(){
                     var params = {
-                        'start' : $scope.pickDateTime.start,
-                        'end' : $scope.pickDateTime.end
+                        'start' : pickDateTime.start,
+                        'end' : pickDateTime.end
                     };                    
                     $http({
                         method  : 'POST',
@@ -271,8 +271,8 @@
 
                 function getTemperature1(){
                     var params = {
-                        'start' : $scope.pickDateTime.start,
-                        'end' : $scope.pickDateTime.end,
+                        'start' : pickDateTime.start,
+                        'end' : pickDateTime.end,
                         'tKind' : '1'
                     };                    
                     $http({
@@ -303,8 +303,8 @@
 
                 function getTemperature2(){
                     var params = {
-                        'start' : $scope.pickDateTime.start,
-                        'end' : $scope.pickDateTime.end,
+                        'start' : pickDateTime.start,
+                        'end' : pickDateTime.end,
                         'tKind' : '2'
                     };  
                     $http({
@@ -520,9 +520,6 @@
                     }
                 }
 
-
-                
-
                 getGasInfo();
                 getElectricityInfo();
                 getTemperature1();
@@ -537,7 +534,10 @@
                             for(var i=basicDateTimeLen; i>=0; i--){
                                 timestamps.push(setDateTime(i));
                             }
-
+                            pickDateTime={
+                                start : timestamps[0],
+                                end : timestamps[basicDateTimeLen]
+                            };
                             getGasInfo();
                             getElectricityInfo();
                             getTemperature1();
