@@ -173,13 +173,13 @@
                 var heatingFurnaceNumber = heatingFurnaceNumber;
                 var grapID = heatingFurnaceNumber+'hogi'
                 var gasAmount = [];
-                var electAmount = [];
+                var electAmount = []; 
                 var temperAmount = [];
                 var timestamps = [];
                 
                 function setDateTime(sec){
-                    var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
-                    //var nowDate = new Date( new Date()-(1000*60*sec) );
+                    //var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                    var nowDate = new Date( new Date()-(1000*60*sec) );
                     var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
                     var year = nowDate.getFullYear();
                     var month = months[nowDate.getMonth()];
@@ -533,6 +533,10 @@
                     updateInterv = $interval(function(){
                         if($scope.liveCheckbox){
                             console.log("load Data");
+                            timestamps = [];
+                            for(var i=basicDateTimeLen; i>=0; i--){
+                                timestamps.push(setDateTime(i));
+                            }
                             getGasInfo();
                             getElectricityInfo();
                             getTemperature1();
