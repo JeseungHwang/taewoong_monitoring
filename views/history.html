@@ -267,7 +267,7 @@
                 };
                 $http({
                     method  : 'POST',
-                    url     : 'http://localhost:18000/Gas/'+$scope.heatingFurnaceNumber,
+                    url     : 'http://210.223.173.191:18000/Gas/'+$scope.heatingFurnaceNumber,
                     data : params,
                     config: 'Content-Type: application/json;'
                 }).
@@ -301,7 +301,7 @@
                 };
                 $http({
                     method  : 'POST',
-                    url     : 'http://localhost:18000/Electricity/'+$scope.heatingFurnaceNumber,
+                    url     : 'http://210.223.173.191:18000/Electricity/'+$scope.heatingFurnaceNumber,
                     data : params,
                     config: 'Content-Type: application/json;'
                 }).
@@ -336,7 +336,7 @@
                 };
                 $http({
                     method  : 'POST',
-                    url     : 'http://localhost:18000/Temperature/'+$scope.heatingFurnaceNumber,
+                    url     : 'http://210.223.173.191:18000/Temperature/'+$scope.heatingFurnaceNumber,
                     data : params,
                     config: 'Content-Type: application/json;'
                 }).
@@ -367,7 +367,7 @@
                 };
                 $http({
                     method  : 'POST',
-                    url     : 'http://localhost:18000/Temperature/'+$scope.heatingFurnaceNumber,
+                    url     : 'http://210.223.173.191:18000/Temperature/'+$scope.heatingFurnaceNumber,
                     data : params,
                     config: 'Content-Type: application/json;'
                 }).
