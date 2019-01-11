@@ -31,7 +31,7 @@
                                 <div ng-value={{item.urls}}><md-icon md-svg-icon={{item.icon_img}}></md-icon>{{ item.name }}</div>
                             </div>
                         </md-list-item>
-                        <md-list-item class="md-3-line sub-list-item" ng-repeat="item in HFlist" ng-click="HFhistory($event, item)">
+                        <md-list-item class="md-3-line sub-list-item" ng-repeat="item in HFlist" ng-click="HFhistoryLink($event, item)">
                             <div class="md-list-item-text" layout="column" >
                                 <div ng-value={{item.HFid}}><md-icon md-svg-icon="/img/fire.svg"></md-icon>{{ item.name }}</div>
                             </div>
@@ -41,12 +41,37 @@
                 </md-sidenav>
             </section>
         </div>
+        <div layout="column" ng-cloak="" class="sidenavdemoCustomSidenav">
+            <section layout="row" flex="">
+                <md-sidenav class="md-sidenav-right" md-component-id="right" md-disable-backdrop="" md-whiteframe="4">
+
+                    <md-toolbar class="md-theme-indigo">
+                        <div class="menu-toolbar">
+                            <h1 class="md-toolbar-tools">Mote Notification <md-icon md-svg-icon="/img/cancel.svg" ng-click="toggleNotifiList()"></md-icon></h1>
+                        </div>
+                    </md-toolbar>
+
+                    <md-content layout-margin="">
+
+                        <md-list-item class="md-2-line sub-list-item2" ng-repeat="item in bootInfoList" ng-click="">
+                            <div class="md-list-item-text" layout="column" >
+                                <div><md-icon md-svg-icon="/img/boot.svg"></md-icon>{{item.bootTime}} </div>
+                                <p>'{{ item.MAC }}' is booted</p>
+                            </div>
+                        </md-list-item>
+                    </md-content>
+
+                </md-sidenav>
+            </section>
+        </div>
         <md-content>
             <md-toolbar class="md-hue-2">
-                <div class="md-toolbar-tools">
-                    <md-button class="md-icon-button" aria-label="Menu" ng-click="toggleLeft()">
-                        <md-icon md-svg-icon="/img/menu.svg"></md-icon>
-                    </md-button>
+                <div class="md-toolbar-tools main_toolbar">
+                    <md-toolbar-filler layout="row" layout-align="center center" class="menu_contour_left">
+                        <md-button class="md-icon-button" aria-label="Menu" ng-click="toggleLeft()">
+                            <md-icon md-svg-icon="/img/menu.svg"></md-icon>
+                        </md-button>
+                    </md-toolbar-filler>
                     <h2 flex md-truncate>ENS - Taewoong System Monitoring</h2>
                     <md-button class="md-icon-button" aria-label="Alarm" >
                         <md-icon md-svg-icon="/img/alarm.svg"></md-icon>
@@ -54,6 +79,11 @@
                     <div>
                         {{date | date:'yyyy-MM-dd HH-mm-ss'}}
                     </div>
+                    <md-toolbar-filler layout="row" layout-align="center center" class="menu_contour_right">
+                        <md-button class="md-icon-button" aria-label="Alarm" ng-click="toggleNotifiList()">
+                            <md-icon md-svg-icon="/img/notification.svg" id="notifi_icon"></md-icon>
+                        </md-button>
+                    </md-toolbar-filler>
                 </div>
             </md-toolbar>
             <br>
@@ -112,6 +142,7 @@
 
 
     <script type="text/javascript">
+        var notifyCheck = true;
         var myApp = angular.module('MonitoringApp', ['ngMaterial', 'ui.grid']);
         
         myApp.controller('ToolbarCtrl', function($scope, $interval, $mdSidenav, $window, $location) {
@@ -120,10 +151,23 @@
             },1000);
 
             $scope.toggleLeft = buildToggler('left');
+            $scope.toggleNotifiList = buildToggler('right');
+
             function buildToggler(componentId) {
-                return function() {
-                    $mdSidenav(componentId).toggle();
-                };
+                if(componentId == 'left'){
+                    return function() {
+                        $mdSidenav(componentId).toggle();
+                    };    
+                }else if(componentId == 'right'){
+                    return function() {
+                        if(notifyCheck == false){
+                            var notify_dom = document.getElementById('notifi_icon');
+                            notify_dom.style = 'fill:white;';
+                        }
+                        $mdSidenav(componentId).toggle();
+                    };
+                }
+                
             }
 
             $scope.MenuList = [
@@ -149,7 +193,51 @@
                     HFid: '5',
                 }
             ];
-            $scope.HFhistory = function(event, item){
+
+            $scope.bootInfoList = [
+                {
+                    bootTime : '2019-01-01 12:00',
+                    MAC:'AABB'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    MAC:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    MAC:'EEFF'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    MAC:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    MAC:'EEFF'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    MAC:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    MAC:'EEFF'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    MAC:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    MAC:'EEFF'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    MAC:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    MAC:'EEFF'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    MAC:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    MAC:'EEFF'
+                }
+            ];
+
+            $scope.HFhistoryLink = function(event, item){
                 var linkURL = "http://" + $window.location.host + "/history/" +item.HFid;
                 $window.location.href = linkURL;
             };

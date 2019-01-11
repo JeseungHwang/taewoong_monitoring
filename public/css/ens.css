@@ -64,3 +64,26 @@ span>md-icon{
 hr{
     margin-bottom: 20px;
 }
+.contourLine{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.menu_contour_left{
+    height: 100%;
+    background-color: #777777;
+    margin-right: 30px;
+    box-shadow: 0px 0px 2px 1px inset black;
+}
+.menu_contour_right{
+    height: 100%;
+    background-color: #777777;
+    margin-left: 30px;
+    box-shadow: 0px 0px 2px 1px inset black;
+}
+.main_toolbar{
+    margin: 0px;
+    padding: 0px;
+}
+.menu-toolbar{
+    background-color: #777777;
+}
