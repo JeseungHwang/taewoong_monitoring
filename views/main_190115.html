@@ -66,8 +66,8 @@
                                 <md-content class="md-padding">
                                     <md-list-item class="md-2-line sub-list-item2" ng-repeat="item in lossDataLogList" ng-click="lossdataLogClick($event, item)">
                                         <div class="md-list-item-text" layout="column" >
-                                            <div><md-icon md-svg-icon={{item.icon_img}}></md-icon>{{item.lossTime}} </div>
-                                            <p>- <strong>{{ item.name }}</strong>의 <strong>{{item.dataType}} 데이터</strong>가 손실되었음.</p>
+                                            <div><md-icon md-svg-icon="/img/signal_loss.svg"></md-icon>{{item.lossTime}} </div>
+                                            <p>- {{item.dataType}} data of Unit {{ item.target }} has been lost.</p>
                                         </div>
                                     </md-list-item>
                                 </md-content>
@@ -164,27 +164,16 @@
         var notifyCheck = true;
         var myApp = angular.module('MonitoringApp', ['ngMaterial']);
         var heatingFurnaceList = [] ;
-        var rootURL = 'http://210.223.173.191:18000';
-        //var rootURL = 'http://localhost:18000';
 
-        myApp.controller('ToolbarCtrl', function($scope, $http, $interval, $mdSidenav, $window, $location) {
-            $interval(function(){   //실시간 시간 갱신 부분
+        myApp.controller('ToolbarCtrl', function($scope, $interval, $mdSidenav, $window, $location) {
+            $interval(function(){
                 $scope.date = new Date();
             },1000);
 
-            $scope.toggleLeft = buildToggler('left');   //왼쪽 토글 리스트
-            $scope.toggleNotifiList = buildToggler('right');    //오른쪽 토글 리스트
-            
-            getNotificationLog();   //Notification Log 정보 불러오기
+            $scope.toggleLeft = buildToggler('left');
+            $scope.toggleNotifiList = buildToggler('right');
 
-            $interval(function(){   //각 1분 10초마다 Notification Log 정보 불러오기
-                let nTSecs = $scope.date.getSeconds();
-                if(9 < nTSecs && nTSecs < 21){
-                    getNotificationLog();
-                }
-            },10000);
-
-            function buildToggler(componentId) {    //토글 메뉴 이벤트
+            function buildToggler(componentId) {
                 if(componentId == 'left'){
                     return function() {
                         $mdSidenav(componentId).toggle();
@@ -232,10 +221,43 @@
                 },{
                     bootTime : '2019-01-01 13:00',
                     target:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    target:'EEFF'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    target:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    target:'EEFF'
+                },{
+                    bootTime : '2019-01-01 13:00',
+                    target:'CCDD'
+                },{
+                    bootTime : '2019-01-01 14:00',
+                    target:'EEFF'
                 }
             ];
 
-            $scope.lossDataLogList = [];
+            $scope.lossDataLogList = [
+                {
+                    lossTime : '2019-01-01 12:00',
+                    target:'1',
+                    dataType:'Gas'
+                },{
+                    lossTime : '2019-01-01 12:00',
+                    target:'2',
+                    dataType:'Electricity'
+                },{
+                    lossTime : '2019-01-01 12:00',
+                    target:'3',
+                    dataType:'Temperature'
+                },{
+                    lossTime : '2019-01-01 12:00',
+                    target:'4',
+                    dataType:'Electricity'
+                }
+            ];
 
             $scope.HFhistoryLink = function(event, item){
                 var linkURL = "http://" + $window.location.host + "/history/" +item.HFid;
@@ -253,56 +275,39 @@
             
             $scope.lossdataLogClick = function(event, item){
                 $window.location.href;
+                console.log(heatingFurnaceList);
             };
-
-            function getNotificationLog(){
-                $http({
-                    method  : 'GET',
-                    url     : rootURL+'/Notification/loss',
-                    config: 'Content-Type: application/json;'
-                }).
-                then(function successCallback(response) {
-                    $scope.lossDataLogList = [];
-
-                    for (var i = 0 ; i < response.data.length ; i++) {
-                        let respnData = {
-                            'lossTime': response.data[i].createdAt,
-                            'name' : response.data[i].name,
-                            'dataType' : response.data[i].dataType
-                        }
-                        if (respnData.dataType == '가스'){
-                            respnData.icon_img = '/img/notif_gas.svg'
-                        }else if (respnData.dataType == '전력'){
-                            respnData.icon_img = '/img/notif_elect.svg'
-                        }else if (respnData.dataType == '온도'){
-                            respnData.icon_img = '/img/notif_temper.svg'
-                        }
-                        $scope.lossDataLogList.push(respnData);
-                    }
-
-
-                },function errorCallback(response) {
-                  console.log('error occuring : getGasInfo=function');
-                });
-            }
-
         }); 
 
 
         myApp.controller('GraphCtrl', function($scope, $http, $interval, $timeout, $mdToast, $log ){
             //var heatingFurnaceList = [] ;
             var updateInterv = undefined;
-            var basicDateTimeLen = 121;
+            var basicDateTimeLen = 120;
             $scope.liveCheckbox = true;
 
-            var HeatingFurnaceClass = function(heatingFurnaceNumber){
-                var heatingFurnaceNumber = heatingFurnaceNumber;
+            function HeatingFurnaceClass(heatingFurnaceNumber){
+                //var rootURL = 'http://210.223.173.191:18000';
+                var rootURL = 'http://localhost:18000';
+                this.heatingFurnaceNumber = heatingFurnaceNumber;
                 var grapID = heatingFurnaceNumber+'hogi';
-                var gasAmount = [];
-                var electAmount = []; 
-                var temperAmount = [];
+                this.gasAmount = [];
+                this.electAmount = []; 
+                this.temperAmount = [];
                 var timestamps = [];
                 
+                function setDateTime(sec){
+                    var nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
+                    //var nowDate = new Date( new Date()-(1000*60*sec) );
+                    var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+                    var year = nowDate.getFullYear();
+                    var month = months[nowDate.getMonth()];
+                    var date = (nowDate.getDate()<10?'0':'')+nowDate.getDate();
+                    var hour = (nowDate.getHours()<10?'0':'')+nowDate.getHours();
+                    var min = (nowDate.getMinutes()<10?'0':'')+nowDate.getMinutes();
+                    return year+'-'+month+'-'+date+' '+ hour + ':' + min;
+                }
+
                 for(var i=basicDateTimeLen; i>=0; i--){
                     timestamps.push(setDateTime(i));
                 }
@@ -312,26 +317,8 @@
                     end : timestamps[basicDateTimeLen]
                 };
 
-                getGasInfo();
-                getElectricityInfo();
-                getTemperature1();
-                getTemperature2();
-                setUpdateInterval();          
-
-                function setDateTime(sec){
-                    //let nowDate = new Date( new Date('2018-12-24 10:00')-(1000*60*sec) );
-                    let nowDate = new Date( new Date()-(1000*60*sec) );
-                    let months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-                    let year = nowDate.getFullYear();
-                    let month = months[nowDate.getMonth()];
-                    let date = (nowDate.getDate()<10?'0':'')+nowDate.getDate();
-                    let hour = (nowDate.getHours()<10?'0':'')+nowDate.getHours();
-                    let min = (nowDate.getMinutes()<10?'0':'')+nowDate.getMinutes();
-                    return year+'-'+month+'-'+date+' '+ hour + ':' + min;
-                }
-
                 function getGasInfo(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end
                     };
@@ -342,18 +329,21 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let gasUsage = [];
-                        let gasTotal = [];
-                        for (let i = 0 ; i < timestamps.length-1 ; i++) {
+                        gasAmount = [];
+                        var gasUsage = [];
+                        var gasTotal = [];
+                        var dateIndex = 0;
+                        for (var i = 0 ; i < timestamps.length ; i++) {
                             gasUsage[i] = 0;
                             gasTotal[i] = 0;
                         }
                         
-                        for (let i = 1 ; i < response.data.length ; i++) {
-                            let index = timestamps.indexOf(response.data[i].createdAt)-1;
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt);
                             gasUsage[index] = (response.data[i].value - response.data[i-1].value) / 10;
                             gasTotal[index] = response.data[i].value / 10;
                         }
+
                         gasAmount.push({
                             'usage' : gasUsage,
                             'total' : gasTotal
@@ -364,7 +354,7 @@
                 }
 
                 function getElectricityInfo(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end
                     };                    
@@ -375,15 +365,17 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let electUsage = [];
-                        let electTotal = [];
-                        for (let i = 0 ; i < timestamps.length-1 ; i++) {
+                        electAmount = [];
+                        var electUsage = [];
+                        var electTotal = [];
+                        var dateIndex = 0;
+                        for (var i = 0 ; i < timestamps.length ; i++) {
                             electUsage[i] = 0;
                             electTotal[i] = 0;
                         }
 
-                        for (let i = 1 ; i < response.data.length ; i++) {
-                            let index = timestamps.indexOf(response.data[i].createdAt)-1;
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt);
                             electUsage[index] = (response.data[i].value - response.data[i-1].value).toFixed(2);
                             electTotal[index] = response.data[i].value.toFixed(2);
                         }
@@ -397,7 +389,7 @@
                 }
 
                 function getTemperature1(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end,
                         'tKind' : '1'
@@ -409,13 +401,15 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let temper1Usage = [];
-                        for (let i = 0 ; i < timestamps.length ; i++) {
+                        temperAmount = [];
+                        var temper1Usage = [];
+                        var dateIndex = 0;
+                        for (var i = 0 ; i < timestamps.length ; i++) {
                             temper1Usage[i] = 0;
                         }
 
-                        for (let i = 1 ; i < response.data.length ; i++) {
-                            let index = timestamps.indexOf(response.data[i].createdAt)-1;
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt);
                             temper1Usage[index] = response.data[i].value/10;
                         }
                         temperAmount.push({
@@ -427,7 +421,7 @@
                 }
 
                 function getTemperature2(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end,
                         'tKind' : '2'
@@ -439,20 +433,20 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let temper2Usage = [];
-                        for (let i = 0 ; i < timestamps.length ; i++) {
+                        var temper2Usage = [];
+                        var dateIndex = 0;
+                        for (var i = 0 ; i < timestamps.length ; i++) {
                             temper2Usage[i] = 0;
                         }
 
-                        for (let i = 1 ; i < response.data.length ; i++) {
-                            let index = timestamps.indexOf(response.data[i].createdAt)-1;
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt);
                             temper2Usage[index] = response.data[i].value/10;
                         }
                         temperAmount.push({
                             'temper2' : temper2Usage
                         });
                         setGraphData();
-                        isMissingData(gasAmount);
                     },function errorCallback(response) {
                       console.log('error occuring : getTemperature=function');
                     });
@@ -461,10 +455,10 @@
                 // funtion setGraphData()
                 // 설명 : 그래프를 그리기 위한 정보를 Set 하는 함수
                 function setGraphData(){
-                    let colors = ['#009966', '#0000FF', '#CC6600'];
-                    let dom = document.getElementById(grapID);
-                    let myChart = echarts.init(dom);
-                    let app = {};
+                    var colors = ['#009966', '#0000FF', '#CC6600'];
+                    var dom = document.getElementById(grapID);
+                    var myChart = echarts.init(dom);
+                    var app = {};
                     option = {
                         tooltip: {
                             trigger: 'axis',
@@ -494,7 +488,7 @@
                             axisTick: {
                                 alignWithLabel: true
                             },
-                            data: timestamps.slice(1,122)
+                            data: timestamps
                         },
                         yAxis: [
                             {
@@ -645,85 +639,47 @@
                     }
                 }
 
-                function isMissingData(){
-                    let pos = gasAmount[0].total.length-1;
-                    let lastGasVal = gasAmount[0].total[pos]; 
-                    let lastElectVal = electAmount[0].total[pos]; 
-
-                    if( lastGasVal == 0) {
-                        let params = {
-                            'id' :heatingFurnaceNumber,
-                            'logType' : 'loss',
-                            'dataType' : '가스',
-                            'createdAt' : timestamps[pos+1]
-                        };
-                        $http({
-                            method  : 'POST',
-                            url     : rootURL+'/Notification',
-                            data : params,
-                            config: 'Content-Type: application/json;'
-                        }).
-                        then(function successCallback(response) {
-                            console.log(response);
-                        },function errorCallback(response) {
-                          console.log('error occuring : isMissingData(lsatGasVal)=function');
-                        });
-                    }
-                    if ( lastElectVal == 0 ){
-                        let params = {
-                            'id' :heatingFurnaceNumber,
-                            'logType' : 'loss',
-                            'dataType' : '전력',
-                            'createdAt' : timestamps[pos+1]
-                        };
-                        $http({
-                            method  : 'POST',
-                            url     : rootURL+'/Notification',
-                            data : params,
-                            config: 'Content-Type: application/json;'
-                        }).
-                        then(function successCallback(response) {
-                            console.log(response);
-                        },function errorCallback(response) {
-                          console.log('error occuring : isMissingData(lastElectVal)=function');
-                        });
-                    }
-
-                }
+                getGasInfo();
+                getElectricityInfo();
+                getTemperature1();
+                getTemperature2();
+                setUpdateInterval();
 
                 function setUpdateInterval(){
-                    let nowTimes = null;
-                    let nTSecs = null
+                    var nowTimes = null;
+                    var nTmins = null
                     updateInterv = $interval(function(){
                         nowTimes = new Date();
-                        nTSecs = nowTimes.getSeconds();
-                        if(nTSecs == 0 && $scope.liveCheckbox){
+                        nTmins = nowTimes.getSeconds();
+                        if(nTmins == 0 && $scope.liveCheckbox){
+                            console.log("load Data");
                             timestamps = [];
-                            for(let i=basicDateTimeLen; i>=0; i--){
+                            for(var i=basicDateTimeLen; i>=0; i--){
                                 timestamps.push(setDateTime(i));
                             }
                             pickDateTime={
                                 start : timestamps[0],
                                 end : timestamps[basicDateTimeLen]
                             };
-                            gasAmount = [];
-                            electAmount = [];
-                            temperAmount = [];
+
                             getGasInfo();
                             getElectricityInfo();
                             getTemperature1();
                             getTemperature2();
                             //showAlartToast();
+                            console.log(gasAmount);
+                            console.log(electAmount);
+                            console.log(temperAmount);
                         }
                     },1000);
                 }
 
                 function showAlartToast(){
-                    let notify_dom = document.getElementById('notifi_icon');
+                    var notify_dom = document.getElementById('notifi_icon');
                     notify_dom.style = 'fill:yellow;';
                     notifyCheck = false;
-                    let pinTo = 'bottom right';
-                    let toast = $mdToast.simple()
+                    var pinTo = 'bottom right';
+                    var toast = $mdToast.simple()
                         .textContent('ENS Mote booted!')
                         .highlightAction(true)
                         .action('OK')
@@ -748,8 +704,11 @@
 
             //Gas 사용량 정보를 담은 Class 객체 생성하여 heatingFurnaceList에 추가
             for(var i=1 ; i<=5 ; i++){
-                heatingFurnaceList.push(new HeatingFurnaceClass(i));
-            }            
+                var HFclass = new HeatingFurnaceClass(i);
+                heatingFurnaceList.push(HFclass);
+            }
+            console.log(heatingFurnaceList);
+            
         });
         
     </script>
