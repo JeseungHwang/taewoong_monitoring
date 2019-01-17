@@ -179,7 +179,7 @@
 
             $interval(function(){   //각 1분 10초마다 Notification Log 정보 불러오기
                 let nTSecs = $scope.date.getSeconds();
-                if(9 < nTSecs && nTSecs < 21){
+                if(19 < nTSecs && nTSecs < 31){
                     getNotificationLog();
                 }
             },10000);
@@ -331,7 +331,7 @@
                 }
 
                 function getGasInfo(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end
                     };
@@ -342,15 +342,15 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let gasUsage = [];
-                        let gasTotal = [];
-                        for (let i = 0 ; i < timestamps.length-1 ; i++) {
+                        var gasUsage = [];
+                        var gasTotal = [];
+                        for (var i = 0 ; i < timestamps.length-1 ; i++) {
                             gasUsage[i] = 0;
                             gasTotal[i] = 0;
                         }
                         
-                        for (let i = 1 ; i < response.data.length ; i++) {
-                            let index = timestamps.indexOf(response.data[i].createdAt)-1;
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt)-1;
                             gasUsage[index] = (response.data[i].value - response.data[i-1].value) / 10;
                             gasTotal[index] = response.data[i].value / 10;
                         }
@@ -364,7 +364,7 @@
                 }
 
                 function getElectricityInfo(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end
                     };                    
@@ -375,14 +375,14 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let electUsage = [];
-                        let electTotal = [];
-                        for (let i = 0 ; i < timestamps.length-1 ; i++) {
+                        var electUsage = [];
+                        var electTotal = [];
+                        for (var i = 0 ; i < timestamps.length-1 ; i++) {
                             electUsage[i] = 0;
                             electTotal[i] = 0;
                         }
 
-                        for (let i = 1 ; i < response.data.length ; i++) {
+                        for (var i = 1 ; i < response.data.length ; i++) {
                             let index = timestamps.indexOf(response.data[i].createdAt)-1;
                             electUsage[index] = (response.data[i].value - response.data[i-1].value).toFixed(2);
                             electTotal[index] = response.data[i].value.toFixed(2);
@@ -397,7 +397,7 @@
                 }
 
                 function getTemperature1(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end,
                         'tKind' : '1'
@@ -409,13 +409,13 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let temper1Usage = [];
-                        for (let i = 0 ; i < timestamps.length ; i++) {
+                        var temper1Usage = [];
+                        for (var i = 0 ; i < timestamps.length ; i++) {
                             temper1Usage[i] = 0;
                         }
 
-                        for (let i = 1 ; i < response.data.length ; i++) {
-                            let index = timestamps.indexOf(response.data[i].createdAt)-1;
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt)-1;
                             temper1Usage[index] = response.data[i].value/10;
                         }
                         temperAmount.push({
@@ -427,7 +427,7 @@
                 }
 
                 function getTemperature2(){
-                    let params = {
+                    var params = {
                         'start' : pickDateTime.start,
                         'end' : pickDateTime.end,
                         'tKind' : '2'
@@ -439,32 +439,34 @@
                         config: 'Content-Type: application/json;'
                     }).
                     then(function successCallback(response) {
-                        let temper2Usage = [];
-                        for (let i = 0 ; i < timestamps.length ; i++) {
+                        var temper2Usage = [];
+                        for (var i = 0 ; i < timestamps.length ; i++) {
                             temper2Usage[i] = 0;
                         }
 
-                        for (let i = 1 ; i < response.data.length ; i++) {
-                            let index = timestamps.indexOf(response.data[i].createdAt)-1;
+                        for (var i = 1 ; i < response.data.length ; i++) {
+                            var index = timestamps.indexOf(response.data[i].createdAt)-1;
                             temper2Usage[index] = response.data[i].value/10;
                         }
+                        console.log(heatingFurnaceNumber);
+                        console.log(temper2Usage);
                         temperAmount.push({
                             'temper2' : temper2Usage
                         });
                         setGraphData();
-                        isMissingData(gasAmount);
                     },function errorCallback(response) {
-                      console.log('error occuring : getTemperature=function');
+                      console.log('error occuring : getTemperature=function /'+heatingFurnaceNumber);
+                      console.log(response);
                     });
                 }
 
                 // funtion setGraphData()
                 // 설명 : 그래프를 그리기 위한 정보를 Set 하는 함수
                 function setGraphData(){
-                    let colors = ['#009966', '#0000FF', '#CC6600'];
-                    let dom = document.getElementById(grapID);
-                    let myChart = echarts.init(dom);
-                    let app = {};
+                    var colors = ['#009966', '#0000FF', '#CC6600'];
+                    var dom = document.getElementById(grapID);
+                    var myChart = echarts.init(dom);
+                    var app = {};
                     option = {
                         tooltip: {
                             trigger: 'axis',
@@ -643,13 +645,14 @@
                     if (option && typeof option === "object") {
                         myChart.setOption(option, true);
                     }
+
                 }
 
                 function isMissingData(){
-                    let pos = gasAmount[0].total.length-1;
+                    let pos = 118;
                     let lastGasVal = gasAmount[0].total[pos]; 
                     let lastElectVal = electAmount[0].total[pos]; 
-
+                    console.log(heatingFurnaceNumber+"호기 :"+lastGasVal+" / "+lastElectVal+ "["+timestamps[pos+1]+"]");
                     if( lastGasVal == 0) {
                         let params = {
                             'id' :heatingFurnaceNumber,
@@ -688,7 +691,7 @@
                           console.log('error occuring : isMissingData(lastElectVal)=function');
                         });
                     }
-
+                    
                 }
 
                 function setUpdateInterval(){
@@ -697,7 +700,7 @@
                     updateInterv = $interval(function(){
                         nowTimes = new Date();
                         nTSecs = nowTimes.getSeconds();
-                        if(nTSecs == 0 && $scope.liveCheckbox){
+                        if(nTSecs == 0  && $scope.liveCheckbox){
                             timestamps = [];
                             for(let i=basicDateTimeLen; i>=0; i--){
                                 timestamps.push(setDateTime(i));
@@ -713,7 +716,11 @@
                             getElectricityInfo();
                             getTemperature1();
                             getTemperature2();
+                            
                             //showAlartToast();
+                        }
+                        if(nTSecs == 12){
+                            isMissingData();
                         }
                     },1000);
                 }

@@ -34,11 +34,11 @@ var dbConnection = mysql.createConnection({
 
 var dbConnection = mysql.createConnection({
 	host:'127.0.0.1',
-	port:3307,
+	port:3306,
 	//port:6033,
 	user:'root',
-	password:'7413',
-	//password:'dir5187413#',
+	//password:'7413',
+	password:'dir5187413#',
 	database:'taewoong'
 })
 
