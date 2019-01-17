@@ -358,6 +358,7 @@
                             'usage' : gasUsage,
                             'total' : gasTotal
                         });
+                        
                     },function errorCallback(response) {
                       console.log('error occuring : getGasInfo=function');
                     });
@@ -448,8 +449,7 @@
                             var index = timestamps.indexOf(response.data[i].createdAt)-1;
                             temper2Usage[index] = response.data[i].value/10;
                         }
-                        console.log(heatingFurnaceNumber);
-                        console.log(temper2Usage);
+
                         temperAmount.push({
                             'temper2' : temper2Usage
                         });
@@ -458,7 +458,7 @@
                         
                     },function errorCallback(response) {
                       console.log('error occuring : getTemperature=function /'+heatingFurnaceNumber);
-                      console.log(response);
+
                     });
                 }
 
@@ -654,7 +654,7 @@
                     let pos = 118;
                     let lastGasVal = gasAmount[0].total[pos]; 
                     let lastElectVal = electAmount[0].total[pos]; 
-                    console.log(heatingFurnaceNumber+"호기 :"+lastGasVal+" / "+lastElectVal+ "["+timestamps[pos+1]+"]");
+                    //console.log(heatingFurnaceNumber+"호기 :"+lastGasVal+" / "+lastElectVal+ "["+timestamps[pos+1]+"]");
                     if( lastGasVal == 0) {
                         let params = {
                             'id' :heatingFurnaceNumber,
@@ -702,7 +702,7 @@
                     updateInterv = $interval(function(){
                         nowTimes = new Date();
                         nTSecs = nowTimes.getSeconds();
-                        if(nTSecs == 0  && $scope.liveCheckbox){
+                        if(nTSecs == 10  && $scope.liveCheckbox){
                             timestamps = [];
                             for(let i=basicDateTimeLen; i>=0; i--){
                                 timestamps.push(setDateTime(i));
@@ -721,7 +721,7 @@
                             
                             //showAlartToast();
                         }
-                        if(nTSecs == 12){
+                        if(nTSecs == 20){
                             isMissingData();
                         }
                     },1000);
