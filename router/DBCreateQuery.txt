@@ -1,0 +1,8 @@
+CREATE TABLE `taewoong`.`notify_log` (
+  `id` BIGINT(20) NOT NULL,
+  `logType` VARCHAR(45) NOT NULL,
+  `dataType` VARCHAR(15) NOT NULL,
+  `createdAt` DATETIME NOT NULL)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
