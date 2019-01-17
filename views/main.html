@@ -453,7 +453,9 @@
                         temperAmount.push({
                             'temper2' : temper2Usage
                         });
-                        setGraphData();
+                        
+                        $timeout(function() { setGraphData(); }, 2000);
+                        
                     },function errorCallback(response) {
                       console.log('error occuring : getTemperature=function /'+heatingFurnaceNumber);
                       console.log(response);
