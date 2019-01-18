@@ -649,52 +649,6 @@
 
                 }
 
-                function isMissingData(){
-                    let pos = 118;
-                    let lastGasVal = gasAmount[0].total[pos]; 
-                    let lastElectVal = electAmount[0].total[pos]; 
-                    //console.log(heatingFurnaceNumber+"호기 :"+lastGasVal+" / "+lastElectVal+ "["+timestamps[pos+1]+"]");
-                    if( lastGasVal == 0) {
-                        let params = {
-                            'id' :heatingFurnaceNumber,
-                            'logType' : 'loss',
-                            'dataType' : '가스',
-                            'createdAt' : timestamps[pos+1]
-                        };
-                        $http({
-                            method  : 'POST',
-                            url     : rootURL+'/Notification',
-                            data : params,
-                            config: 'Content-Type: application/json;'
-                        }).
-                        then(function successCallback(response) {
-                            console.log(response);
-                        },function errorCallback(response) {
-                          console.log('error occuring : isMissingData(lsatGasVal)=function');
-                        });
-                    }
-                    if ( lastElectVal == 0 ){
-                        let params = {
-                            'id' :heatingFurnaceNumber,
-                            'logType' : 'loss',
-                            'dataType' : '전력',
-                            'createdAt' : timestamps[pos+1]
-                        };
-                        $http({
-                            method  : 'POST',
-                            url     : rootURL+'/Notification',
-                            data : params,
-                            config: 'Content-Type: application/json;'
-                        }).
-                        then(function successCallback(response) {
-                            console.log(response);
-                        },function errorCallback(response) {
-                          console.log('error occuring : isMissingData(lastElectVal)=function');
-                        });
-                    }
-                    
-                }
-
                 function setUpdateInterval(){
                     let nowTimes = null;
                     let nTSecs = null
@@ -729,13 +683,63 @@
                     },1000);
                 }
 
-                function showAlartToast(){
+                function isMissingData(){
+                    let pos = 118;
+                    let lastGasVal = gasAmount[0].total[pos]; 
+                    let lastElectVal = electAmount[0].total[pos]; 
+                    //console.log(heatingFurnaceNumber+"호기 :"+lastGasVal+" / "+lastElectVal+ "["+timestamps[pos+1]+"]");
+                    if( lastGasVal == 0) {
+                        let params = {
+                            'id' :heatingFurnaceNumber,
+                            'logType' : 'loss',
+                            'dataType' : '가스',
+                            'createdAt' : timestamps[pos+1]
+                        };
+                        $http({
+                            method  : 'POST',
+                            url     : rootURL+'/Notification',
+                            data : params,
+                            config: 'Content-Type: application/json;'
+                        }).
+                        then(function successCallback(response) {
+                            console.log(response);
+                            let alertText =params.id+'호기 '+params.dataType+' 데이터 누락';
+                            showAlartToast(alertText);
+                        },function errorCallback(response) {
+                          console.log('error occuring : isMissingData(lsatGasVal)=function');
+                        });
+                    }
+                    if ( lastElectVal == 0 ){
+                        let params = {
+                            'id' :heatingFurnaceNumber,
+                            'logType' : 'loss',
+                            'dataType' : '전력',
+                            'createdAt' : timestamps[pos+1]
+                        };
+                        $http({
+                            method  : 'POST',
+                            url     : rootURL+'/Notification',
+                            data : params,
+                            config: 'Content-Type: application/json;'
+                        }).
+                        then(function successCallback(response) {
+                            console.log(response);
+                            let alertText =params.id+'호기 '+params.dataType+' 데이터 누락';
+                            showAlartToast(alertText);
+                        },function errorCallback(response) {
+                          console.log('error occuring : isMissingData(lastElectVal)=function');
+                        });
+                    }
+                    
+                }
+
+                function showAlartToast(alertText){
                     let notify_dom = document.getElementById('notifi_icon');
                     notify_dom.style = 'fill:yellow;';
                     notifyCheck = false;
                     let pinTo = 'bottom right';
                     let toast = $mdToast.simple()
-                        .textContent('ENS Mote booted!')
+                        .textContent(alertText)
                         .highlightAction(true)
                         .action('OK')
                         .position(pinTo)
