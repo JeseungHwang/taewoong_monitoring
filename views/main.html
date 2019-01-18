@@ -382,7 +382,6 @@
                             electUsage[i] = 0;
                             electTotal[i] = 0;
                         }
-
                         for (var i = 1 ; i < response.data.length ; i++) {
                             let index = timestamps.indexOf(response.data[i].createdAt)-1;
                             electUsage[index] = (response.data[i].value - response.data[i-1].value).toFixed(2);
