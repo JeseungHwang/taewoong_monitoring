@@ -454,7 +454,7 @@
                             'temper2' : temper2Usage
                         });
                         
-                        $timeout(function() { setGraphData(); }, 2000);
+                        $timeout(function() { setGraphData(); }, 1000);
                         
                     },function errorCallback(response) {
                       console.log('error occuring : getTemperature=function /'+heatingFurnaceNumber);
@@ -715,8 +715,11 @@
                             electAmount = [];
                             temperAmount = [];
                             getGasInfo();
+                            $timeout(function() {  }, 1000);
                             getElectricityInfo();
+                            $timeout(function() {  }, 1000);
                             getTemperature1();
+                            $timeout(function() {  }, 1000);
                             getTemperature2();
                             
                             //showAlartToast();
