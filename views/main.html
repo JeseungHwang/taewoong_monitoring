@@ -453,7 +453,7 @@
                             'temper2' : temper2Usage
                         });
                         
-                        $timeout(function() { setGraphData(); }, 1000);
+                        $timeout(function() { setGraphData(); }, 2000);
                         
                     },function errorCallback(response) {
                       console.log('error occuring : getTemperature=function /'+heatingFurnaceNumber);

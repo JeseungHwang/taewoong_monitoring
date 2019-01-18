@@ -13,7 +13,7 @@ module.exports = function(app, fs, mysql, connection, moment)
     
     app.post('/Gas/:heatingFurnaceNumber', function(req, res){
       var params = [heatingFurnaceID[req.params.heatingFurnaceNumber-1].gas, req.body.start, req.body.end];
-      connection.query('SELECT * from iiot WHERE id = ? AND name = "보정적산량" AND timestamp(createdAt) BETWEEN ? AND ? ORDER BY createdAt ASC', params ,function(err,result,rows){
+      connection.query('SELECT * from iiot WHERE id = ? AND name = "보정적산량" AND timestamp(createdAt) BETWEEN ? AND ? GROUP BY UNIX_TIMESTAMP(createdAt) DIV 60 ORDER BY createdAt ASC', params ,function(err,result,rows){
           if (err){
               res.send('Select query Error [Code : 1001]');
               return;
